@@ -55,7 +55,7 @@ io.on('connection', function(socket) {
   socket.on('candidate', function(data) {
       // console.log('candidate received from client');
 
-      var candidate = JSON.parse(data);
+      var candidate = new RTCIceCandidate(JSON.parse(data));
       if (candidate)
           socket.pc.pc1.addIceCandidate(candidate, socket.pc.handleAddIceCandidateSuccess, socket.pc.handleAddIceCandidateError);
 
