@@ -70,10 +70,11 @@ class PeerConnection {
     console.log('making new RTCPeerConnection')
     this.pc1 = new RTCPeerConnection(
       {
+        audioDeviceModule: 'fake',
         iceServers: [{url:'stun:stun.l.google.com:19302'}]
       },
       {
-        'optional': []
+        'optional':  [{DtlsSrtpKeyAgreement: false}]
       }
     );
 
@@ -146,7 +147,9 @@ class PeerConnection {
   }
   
   set_pc2() { }
-  wait() { }
+  wait() { 
+    console.log('awaiting data channels'); 
+  }
   
   openNewDataChannel(socketid) {
     this.create_data_channels(socketid);

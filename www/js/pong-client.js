@@ -37,7 +37,14 @@ socket.on('wrtc_offer', function(data) {
 });
 
 
-var pc2 = new RTCPeerConnection();
+var pc2 = new RTCPeerConnection(
+  {
+    iceServers: [{url:'stun:stun.l.google.com:19302'}]
+  },
+  {
+    'optional': []
+  }
+);
 
 
   pc2.onicecandidate = function(candidate) {
@@ -47,7 +54,20 @@ var pc2 = new RTCPeerConnection();
 
     if(!candidate.candidate) return;
     //  pc1.addIceCandidate(candidate.candidate);
-}
+
+    pc2.onsignalingstatechange = function(event)
+    {
+      console.info("signaling state change: ", event.target.signalingState);
+    };
+    pc2.oniceconnectionstatechange = function(event)
+    {
+      console.info("ice connection state change: ", event.target.iceConnectionState);
+    };
+    pc2.onicegatheringstatechange = function(event)
+    {
+      console.info("ice gathering state change: ", event.target.iceGatheringState);
+    };
+  }
 
 
   function handle_error(error)
