@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var port = process.env.PORT || 3097; // AWS will default to port 80, locally port 3000
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
@@ -19,8 +20,8 @@ app.get('/', function(req, res){
 // static routing for all files in /js
 app.use('/js', express.static('www/js'));   
 
-http.listen(3098, function(){
-    console.log('Server websocket listening on *:3098');
+http.listen(port, function(){
+    console.log('Server websocket listening on *:' + port);
 });
 
 //
