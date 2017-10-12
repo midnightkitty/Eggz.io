@@ -12,7 +12,7 @@ socket.on('msg', function(data) {
 
 socket.on('wrtc_offer', function(data) {
     console.log('wrtc offer received from Server');
-    // console.log(data);
+    console.log(data);
     desc = JSON.parse(data);
     set_pc2_remote_description(desc);
 });
