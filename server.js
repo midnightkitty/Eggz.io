@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
-var port = process.env.PORT || 3097; // AWS will default to port 80, locally port 3000
+//var port = process.env.PORT || 3097; // AWS will default to port 80, locally port 3000
+var port = 3099;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
