@@ -41,7 +41,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('wrtc_answer', function(data) {
-      // console.log('wrtc answer received from client');
+      console.log('wrtc answer received from client');
       desc = JSON.parse(data);
       socket.pc.set_pc1_remote_description(desc);        
       //console.log(data);
@@ -95,11 +95,14 @@ class PeerConnection {
 
   
   handle_error(error) {
+    console.log(error);
     throw error;
   }
   
   create_data_channels(socketid) {
+    console.log('calling createDataChannel');
     var dc1 = this.pc1.createDataChannel(socketid);
+
     dc1.onopen = function() {
       console.log("data channel open with user");
       dc1.onmessage = function(event) {
@@ -133,7 +136,8 @@ class PeerConnection {
   }
   
   set_pc1_remote_description(desc) {
-    // console.log('pc1: set remote description');
+    console.log('pc1: set remote description called');
+    
     this.pc1.setRemoteDescription(
       new RTCSessionDescription(desc),
       this.wait,
