@@ -26,16 +26,24 @@ $(document).ready(function() {
   });
 
   socket.on('msg', function(data) {
+      console.log('msg received form server');
       console.log(data);
   });
 
 socket.on('wrtc_offer', function(data) {
-    console.log('wrtc offer received from Server');
+    console.log('wrtc offer received from Server yah!');
     // console.log(data);
     desc = JSON.parse(data);
     set_pc2_remote_description(desc);
 });
 
+socket.on('candidate', function(data) {
+  console.log('ICE candidate received from server!');
+
+  var candidate = new RTCIceCandidate(JSON.parse(data));
+  if (candidate)
+    pc2.addIceCandidate(candidate, handleAddIceCandidateSuccess, handleAddIceCandidateError);
+});
 
 var pc2 = new RTCPeerConnection(
   {
@@ -49,29 +57,32 @@ var pc2 = new RTCPeerConnection(
 
   pc2.onicecandidate = function(candidate) {
     //  console.log(JSON.stringify(candidate.candidate));
-    // console.log('sending candidate to server');
+    console.log('sending ICE candidate to server');
     socket.emit('candidate', JSON.stringify(candidate.candidate));
 
     if(!candidate.candidate) return;
     //  pc1.addIceCandidate(candidate.candidate);
-
-    pc2.onsignalingstatechange = function(event)
-    {
-      console.info("signaling state change: ", event.target.signalingState);
-    };
-    pc2.oniceconnectionstatechange = function(event)
-    {
-      console.info("ice connection state change: ", event.target.iceConnectionState);
-    };
-    pc2.onicegatheringstatechange = function(event)
-    {
-      console.info("ice gathering state change: ", event.target.iceGatheringState);
-    };
+  }
+  pc2.onsignalingstatechange = function(event) {
+    console.info("signaling state change: ", event.target.signalingState);
+  }
+  pc2.oniceconnectionstatechange = function(event) {
+    console.info("ice connection state change: ", event.target.iceConnectionState);
+  }
+  pc2.onicegatheringstatechange = function(event) {
+    console.info("ice gathering state change: ", event.target.iceGatheringState);
   }
 
+  function handleAddIceCandidateSuccess() {
+    console.log('add ice succeeded');
+  }
+    
+  function handleAddIceCandidateError() {
+    console.log('add ice error');
+  }  
 
-  function handle_error(error)
-  {
+
+  function handle_error(error) {
     throw error;
   }
 
@@ -90,17 +101,7 @@ var pc2 = new RTCPeerConnection(
         dc2.onmessage = function(event) {
           var data = event.data;
           console.log("dc2: received '"+data+"'");
-          /*
-          if(++checks == expected) {
-            done();
-          } else {
-            console.log("dc2: sending 'ping'");
-            dc2.send("ping");
-          }
-          */
         }
-        // console.log("dc2: sending 'ping'");
-        // dc2.send("ping");
       };
     }
   }

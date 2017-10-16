@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
-//var port = process.env.PORT || 3097; // AWS will default to port 80, locally port 3000
-var port = 8081;
+var port = process.env.PORT || 3097; // AWS will default to port 80, locally port 3000
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
@@ -36,6 +35,8 @@ io.on('connection', function(socket) {
   socket.pc = new PeerConnection(socket.id);
   socket.pc.openNewDataChannel();
 
+socket.emit('msg','hello from server websocket!!!');
+
   socket.on('disconnect', function(){
       console.log('user disconnected');
   });
@@ -49,7 +50,7 @@ io.on('connection', function(socket) {
 
   socket.on('msg', function (data) {
       console.log(data);
-      socket.emit('msg','echo from websocket');
+      socket.emit('msg',data);
   });    
 
   socket.on('candidate', function(data) {
@@ -66,7 +67,7 @@ class PeerConnection {
 
   constructor(socketid) {
     this.socketid = socketid;
-
+    io.to(this.socketid).emit('msg','lets get loco!!!');
     console.log('making new RTCPeerConnection')
     this.pc1 = new RTCPeerConnection(
       {
@@ -79,10 +80,12 @@ class PeerConnection {
     );
 
     this.pc1.onicecandidate = function(candidate) {
-      //  console.log(candidate);
       if(!candidate.candidate) return;
+
+      console.log('candidate to send to client found');
+      io.to(this.socketid).emit('candidate', JSON.stringify(candidate.candidate));
       //pc2.addIceCandidate(candidate.candidate);
-    }
+    }.bind(this);
   }
 
   handleAddIceCandidateSuccess() {
@@ -111,6 +114,8 @@ class PeerConnection {
         console.log(data);
         //console.log("dc1: sending 'pong'");
         dc1.send("echo from data channel");
+
+        io.emit('msg','sending message over data channel');        
       }  
     }
     this.create_offer();
