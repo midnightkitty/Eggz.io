@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var port = process.env.PORT || 8081; // AWS will default to port 80, locally port 3000
+var port = process.env.PORT || 8081; 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
@@ -39,11 +39,10 @@ io.on('connection', function(socket) {
   clients.push(socket);
 
   // making new peer connection
-  console.log('making new peer connection');
+  // console.log('making new peer connection');
   socket.pc = new PeerConnection(socket.id);
   socket.pc.openNewDataChannel();
 
-socket.emit('msg','hello from server websocket!!!');
 
   socket.on('disconnect', function(){
       console.log('user disconnected');
@@ -51,14 +50,14 @@ socket.emit('msg','hello from server websocket!!!');
   });
 
   socket.on('wrtc_answer', function(data) {
-      console.log('wrtc answer received from client');
+      // console.log('wrtc answer received from client');
       desc = JSON.parse(data);
       socket.pc.set_pc1_remote_description(desc);        
       //console.log(data);
   });
 
   socket.on('msg', function (data) {
-      console.log(data);
+      // console.log(data);
       socket.emit('msg',data);
   });    
 
@@ -76,8 +75,8 @@ class PeerConnection {
 
   constructor(socketid) {
     this.socketid = socketid;
-    io.to(this.socketid).emit('msg','lets get loco!!!');
-    console.log('making new RTCPeerConnection')
+    // io.to(this.socketid).emit('msg','lets get loco!!!');
+    // console.log('making new RTCPeerConnection')
     this.pc1 = new RTCPeerConnection(
       {
         audioDeviceModule: 'fake',
@@ -91,18 +90,18 @@ class PeerConnection {
     this.pc1.onicecandidate = function(candidate) {
       if(!candidate.candidate) return;
 
-      console.log('candidate to send to client found');
+      // console.log('candidate to send to client found');
       io.to(this.socketid).emit('candidate', JSON.stringify(candidate.candidate));
       //pc2.addIceCandidate(candidate.candidate);
     }.bind(this);
   }
 
   handleAddIceCandidateSuccess() {
-    console.log('add ice succeeded');
+   // console.log('add ice succeeded');
   }
     
   handleAddIceCandidateError() {
-    console.log('add ice error');
+   // console.log('add ice error');
   }  
 
 
@@ -113,7 +112,7 @@ class PeerConnection {
   }
   
   create_data_channels(socketid) {
-    console.log('calling createDataChannel');
+    // console.log('calling createDataChannel');
     var dc1 = this.pc1.createDataChannel(socketid);
 
     dc1.onopen = function() {
@@ -151,7 +150,7 @@ class PeerConnection {
   }
   
   set_pc1_remote_description(desc) {
-    console.log('pc1: set remote description called');
+    // console.log('pc1: set remote description called');
     
     this.pc1.setRemoteDescription(
       new RTCSessionDescription(desc),
@@ -162,7 +161,7 @@ class PeerConnection {
   
   set_pc2() { }
   wait() { 
-    console.log('awaiting data channels'); 
+    // console.log('awaiting data channels'); 
   }
   
   openNewDataChannel(socketid) {
@@ -170,9 +169,9 @@ class PeerConnection {
   }
   
   done() {
-    console.log('cleanup');
+    // console.log('cleanup');
     this.pc1.close();
-    console.log('done');
+    // console.log('done');
   }
 }
 
