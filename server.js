@@ -27,8 +27,12 @@ http.listen(port, function(){
 //
 //  WebSocket
 //
+
+var clients = [];
+
 io.on('connection', function(socket) {
   console.log('a user connected via webSocket');
+  clients.push(socket);
 
   // making new peer connection
   console.log('making new peer connection');
@@ -39,6 +43,7 @@ socket.emit('msg','hello from server websocket!!!');
 
   socket.on('disconnect', function(){
       console.log('user disconnected');
+      clients.splice(clients.indexOf(socket), 1);
   });
 
   socket.on('wrtc_answer', function(data) {
@@ -115,7 +120,7 @@ class PeerConnection {
         //console.log("dc1: sending 'pong'");
         dc1.send("echo from data channel");
 
-        io.emit('msg','sending message over data channel');        
+        io.to(this.socketid).emit('msg','sending message over data channel');        
       }  
     }
     this.create_offer();
@@ -166,6 +171,21 @@ class PeerConnection {
     console.log('done');
   }
 }
+
+setInterval(function() { 
+
+  if (clients) {
+    var player_list = [];
+    clients.forEach(function(client) {
+
+      player_list.push({
+        client: client.id
+      });
+    }, this);
+    console.log('conected client websockets: ' + JSON.stringify(player_list));
+    io.emit('player_list', JSON.stringify(player_list));
+  }
+}, 3000);
 
 
 

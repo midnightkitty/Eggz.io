@@ -45,6 +45,10 @@ socket.on('candidate', function(data) {
     pc2.addIceCandidate(candidate, handleAddIceCandidateSuccess, handleAddIceCandidateError);
 });
 
+socket.on('player_list', function(data) {
+  console.log('connected clients: ' + data);
+});
+
 var pc2 = new RTCPeerConnection(
   {
     iceServers: [{url:'stun:stun.l.google.com:19302'}]
