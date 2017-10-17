@@ -20,6 +20,10 @@ app.get('/', function(req, res){
 // static routing for all files in /js
 app.use('/js', express.static('www/js'));   
 
+// static routing for all files in /assets
+app.use('/assets', express.static('www/assets'));   
+
+
 http.listen(port, function(){
     console.log('Server websocket listening on *:' + port);
 });

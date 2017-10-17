@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
+    "phaser": "^2.6.2",
     "prompt": "^1.0.0",
     "socket.io": "^2.0.3",
     "wrtc": "^0.0.62"
