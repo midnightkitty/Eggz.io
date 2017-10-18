@@ -4,6 +4,8 @@ var port = process.env.PORT || 8081;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
+var core = require('./www/js/core.js');
+var msg; // ServerMessenger
 
 // webrtc aliases
 var RTCPeerConnection      = webrtc.RTCPeerConnection;
@@ -43,7 +45,6 @@ io.on('connection', function(socket) {
   socket.pc = new PeerConnection(socket.id);
   socket.pc.openNewDataChannel();
 
-
   socket.on('disconnect', function(){
       console.log('user disconnected');
       clients.splice(clients.indexOf(socket), 1);
@@ -57,9 +58,13 @@ io.on('connection', function(socket) {
   });
 
   socket.on('msg', function (data) {
-      // console.log(data);
+      console.log(data);
       socket.emit('msg',data);
-  });    
+  });
+  
+  socket.on('data', function(data) {
+    msg.handleMessage(data);
+  })
 
   socket.on('candidate', function(data) {
       // console.log('candidate received from client');
@@ -70,6 +75,20 @@ io.on('connection', function(socket) {
 
   });
 });  
+
+
+
+//
+// Server Messenger
+//
+class ServerMessenger {
+  handleMessage(data) {
+    console.log('handling message: ' + data);
+  }
+
+}
+
+msg = new ServerMessenger();
 
 class PeerConnection {
 
@@ -119,11 +138,11 @@ class PeerConnection {
       console.log("data channel open with user");
       dc1.onmessage = function(event) {
         var data = event.data;
-        console.log(data);
-        //console.log("dc1: sending 'pong'");
-        dc1.send("echo from data channel");
-
-        io.to(this.socketid).emit('msg','sending message over data channel');        
+        // console.log(data);
+        // console.log("dc1: sending 'pong'");
+        // dc1.send("echo from data channel");
+        msg.handleMessage(data);
+        // io.to(this.socketid).emit('msg','sending message over data channel');        
       }  
     }
     this.create_offer();
@@ -163,7 +182,7 @@ class PeerConnection {
   wait() { 
     // console.log('awaiting data channels'); 
   }
-  
+   
   openNewDataChannel(socketid) {
     this.create_data_channels(socketid);
   }
@@ -187,6 +206,8 @@ setInterval(function() {
     }, this);
     console.log('conected client websockets: ' + JSON.stringify(player_list));
     io.emit('player_list', JSON.stringify(player_list));
+    io.emit('data','l-' + JSON.stringify(player_list));
+
   }
 }, 3000);
 

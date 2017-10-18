@@ -2,20 +2,153 @@
     <head>
         <title>wrtc+phaser</title>
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="js/wrtc.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.6.2/phaser.js"></script>
+        <script src="js/core.js"></script>
         <script src="js/client.js"></script>
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
         <style>
-            html , body {
-                background: #888787; 
-                color: #fff; 
-                font-family: Helvetica;
+            #login {
+                width: 300px;
+                height: 160px;
+                position: absolute;
+                left: 50%;
+                top: 35%;
+                margin: -100px 0 0 -150px;
+                background-color: rgba(255, 255, 255, 0.65); 
+            }
+            #login-user-title {
+                font-family: Verdana, Geneva, sans-serif; 
+                font-weight: bold;
+                position: relative;
+                text-align: center;
+                top: 8%;
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            #user-id {
+                font-family: Verdana, Geneva, sans-serif; 
+                background-color: rgba(102, 204, 255, 0.65);
+                width: 200px;
+                height: 30px;
+                position: relative;
+                top: 15%;
+                margin: 0 auto;
+                zoom: 1;
+                padding-top: 10px;
+                text-align: center;
+            }
+            #login-button {
+                font-family: Verdana, Geneva, sans-serif; 
+                font-weight: bold;
+                background-color: rgba(153, 255, 102, 0.65);
+                width: 200px;
+                height: 30px;
+                position: relative;
+                top: 27%;
+                margin: 0 auto;
+                zoom: 1;
+                padding-top:10px;
+                text-align: center;
+                cursor: pointer;
+            }
+            #chatinput { 
+                list-style-type: none; 
                 margin: 0; 
-                padding: 0;
+                padding: 0; 
+                zoom: 1; 
+                position:absolute; 
+                top:10px;           
+            }
+            #chatinput li { 
+                margin: 0 5px 5px 5px; 
+                padding: 3px; 
+                width: 100%; 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+            }            
+            #chat { 
+                list-style-type: none; 
+                margin: 0; 
+                padding: 0; 
+                zoom: 1; 
+                position:absolute; 
+                top:50px;
+            }
+            #chat li { 
+                margin: 0 5px 5px 5px; 
+                padding: 3px; 
+                width: 300px; 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            #leaderboard { 
+                list-style-type: none; 
+                margin: 0; 
+                padding: 0; 
+                right: 10px;
+                position:absolute; 
+                top:10px;
+            }
+            #leaderboard li { 
+                margin: 0 5px 5px 5px; 
+                padding: 3px; 
+                width: 300px; 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+            #leaderboard-title {
+                font-family: Verdana, Geneva, sans-serif; 
+                font-weight: bold;
+                position: relative;
+                text-align: center;
+                top: 8%;
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }            
+            body {
+                margin:0; 
+                width:100%; 
+                height:100%; 
+                overflow:hidden;
+            }
+            *:focus {
+                outline: none;
             }
         </style>
     </head>
     <body>
+        <ul id="leaderboard">
+            <li>
+                <div id="leaderboard-title">...</div>
+            </li>
+        </ul>
+        <ul id="chatinput" style="display: none;">
+            <li>
+                <div id="msg-input" contenteditable="true"></div>
+            </li>
+        </ul>
+        <ul id="chat">
+        </ul>
+            <span id="login" style="display: none;">
+                <div id="login-user-title">Player Name</div>
+                <div id="user-id" contenteditable="true" spellcheck="false"></div>
+                <div id="login-button">Join</div>
+            </span>
     </body>
 </html>
