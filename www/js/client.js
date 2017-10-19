@@ -11,11 +11,16 @@ var cursors;
 
 var players = [];
 
+var localPlayer = {};
+
 // total world dimensions
 var world_x = 5000; 
 var world_y = 5000;
 
 var player_speed = 2;
+
+var keys = {};
+var keyInputStr;
 
 $(document).ready(function() {
   setupSocketIO();
@@ -23,47 +28,11 @@ $(document).ready(function() {
   setupPhaser();
   keyboardSetup();
   pageSetup();
-
-  msg = new ClientMessenger(socket, dc2);
 });
 
 //
 //  ClientMessenger class
 //
-
-/*
-class ClientMessenger {
-
-  constructor() {
-    this.socketOn = true;
-    this.dcOn = true;
-  }
-
-  send(type, data) {
-    console.log('messenger sending: ' + data);
-    if (this.socketOn) {
-      socket.emit('data', type + '-' + data);
-    }
-    if (this.dcOn) {
-      dc2.send(type + '-' + data);
-    }
-  }
-
-  // l- player list
-  // m - message
-  handleMessage(data) {
-    var type = data.substring(0,1);
-    var result = data.substring(2,data.length);
-    console.log('' + type + ':' + result);
-
-    if (type == 'l') {
-      updateLeaderboard(JSON.parse(result));
-    }
-  }
-
-}
-*/
-
 class ClientMessenger extends Messenger {
   constructor(socket, dataChannel) {
     super(socket,dataChannel);
@@ -74,7 +43,7 @@ class ClientMessenger extends Messenger {
   handleMessage(data) {
     var type = data.substring(0,1);
     var result = data.substring(2,data.length);
-    console.log('' + type + ':' + result);
+    //console.log('' + type + ':' + result);
 
     if (type == 'l') {
       updateLeaderboard(JSON.parse(result));
@@ -87,7 +56,7 @@ class ClientMessenger extends Messenger {
 // Leaderboard
 //
 function updateLeaderboard(playerList) {
-  console.log(playerList.length + ' players online');
+  // console.log(playerList.length + ' players online');
 
   if (playerList.length == 1) {
     $('#leaderboard-title').html(playerList.length + ' player online');
@@ -118,23 +87,49 @@ function pageSetup() {
 
 
 //
-// Keyboard setup
+// Keyboard menu setup
 //
 function keyboardSetup() {
-    $(document).keypress(function(e) {
-      console.log('key pressed:' + e.keyCode);
-      if (e.keyCode == 49) {
-        // console.log('sending websocket message');
-        socket.emit('data','m-test websocket message from client');
-      }
-      if (e.keyCode == 50) {
-        // console.log('sending dataChannel message');
-        dc2.send('m-test dataChannel message from client');
-      }
-      if (e.keyCode == 51) {
-        msg.send('m', 'm-test messenger message');
-      }
-    });
+
+  $(document).keydown(function(e) {
+    // console.log('key pressed:' + e.keyCode);
+    keys[e.which] = true;
+    makeInputStr();
+  });
+
+  $(document).keyup(function (e) {
+    delete keys[e.which];
+    makeInputStr();
+  });
+}
+
+function makeInputStr() {
+  var inputs = [];
+  
+  for (var i in keys) {
+   if (!keys.hasOwnProperty(i)) continue;
+
+   i = parseInt(i);
+
+    switch(i) {
+      case 37:
+        inputs.push('l');
+        break;
+      case 39:
+        inputs.push('r');
+        break;
+      case 38:
+        inputs.push('u');
+        break;
+      case 40:
+        inputs.push('d');
+        break;
+      case 32:
+        inputs.push('s');
+        break;
+    }
+  }
+  keyInputStr = inputs.join('.');
 }
 
 //
@@ -197,9 +192,20 @@ function setupPhaser() {
     //game.scale.setGameSize(800,600);
     //game.scale.refresh();
 
+    game.stage.disableVisibilityChange = true;
+
+    game.time.advancedTiming = true;
+
     // add local user to usrs list
-    players.push(new Player(player,socket.id, true));
+    localPlayer = new Player(player,socket.id);
+
+    game.time.events.loop(1000, updateStats, this);
   }
+
+  function updateStats() {
+    $('#stats').html('FPS:' + game.time.fps);
+  }
+
 
   $(window).resize(function() {
     game.scale.setGameSize(window.innerWidth, window.innerHeight)
@@ -240,8 +246,10 @@ function setupPhaser() {
       {
           player.body.velocity.y = -350;
       }
-  }
 
+      if (keyInputStr)
+        msg.client_sendDC('i', keyInputStr);
+  }
 }
 
 //
@@ -330,6 +338,9 @@ function setupWebRTC() {
       dc2 = event.channel;
       dc2.onopen = function() {
         console.log(" data channel open wither server");
+        dc2.send('creating ClientMessenger');
+        msg = new ClientMessenger(socket, dc2);
+
         dc2.onmessage = function(event) {
           var data = event.data;
           // console.log("dc2: received '"+data+"'");

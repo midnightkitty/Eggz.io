@@ -120,7 +120,19 @@
                 -khtml-user-select: none;
                 -webkit-user-select: none;
                 user-select: none;
-            }            
+            }          
+            #stats { 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                margin: 0; 
+                padding: 0; 
+                right: 10px;
+                position:absolute; 
+                bottom:10px;
+            }  
             body {
                 margin:0; 
                 width:100%; 
@@ -145,10 +157,11 @@
         </ul>
         <ul id="chat">
         </ul>
-            <span id="login" style="display: none;">
-                <div id="login-user-title">Player Name</div>
-                <div id="user-id" contenteditable="true" spellcheck="false"></div>
-                <div id="login-button">Join</div>
-            </span>
+        <span id="login" style="display: none;">
+            <div id="login-user-title">Player Name</div>
+            <div id="user-id" contenteditable="true" spellcheck="false"></div>
+            <div id="login-button">Join</div>
+        </span>
+        <span id="stats">...</span>
     </body>
 </html>

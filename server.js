@@ -4,8 +4,9 @@ var port = process.env.PORT || 8081;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
-var core = require('./www/js/core.js');
-var msg; // ServerMessenger
+
+var Messenger = require('./www/js/core.js').Messenger;
+var msg = {}; // Messenger instance for server
 
 // webrtc aliases
 var RTCPeerConnection      = webrtc.RTCPeerConnection;
@@ -81,11 +82,15 @@ io.on('connection', function(socket) {
 //
 // Server Messenger
 //
-class ServerMessenger {
-  handleMessage(data) {
-    console.log('handling message: ' + data);
+class ServerMessenger extends Messenger {
+  constructor() {
+    super();
   }
 
+  consumeMessage(type, data) {
+    // console.log('consuming this action');
+    super.consumeMessage(type, data);
+  }
 }
 
 msg = new ServerMessenger();
@@ -138,7 +143,7 @@ class PeerConnection {
       console.log("data channel open with user");
       dc1.onmessage = function(event) {
         var data = event.data;
-        // console.log(data);
+        //console.log(data);
         // console.log("dc1: sending 'pong'");
         // dc1.send("echo from data channel");
         msg.handleMessage(data);
