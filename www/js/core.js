@@ -120,6 +120,7 @@ function setupPhaserGame() {
       player.anchor.setTo(0.5, 0.5);
   
       game.physics.p2.gravity.y = 300;
+      game.physics.p2.restitution = 0.3;
   
       game.world.setBounds(0,0,world_x,world_y);
       game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
