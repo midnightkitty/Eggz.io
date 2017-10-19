@@ -180,6 +180,7 @@ function setupPhaser() {
     //game.physics.arcade.enable(gr);
     game.physics.p2.enable(gr);
     //gr.body.immovable = true;
+    gr.body.label = 'ground';
     gr.body.static = true;
     gr.body.setMaterial(ledgeMaterial);
     tileLedges.add(gr);
@@ -188,6 +189,7 @@ function setupPhaser() {
     //game.physics.arcade.enable(ts);
     game.physics.p2.enable(ts);
     //ts.body.immovable = true;
+    ts.body.label = 'ground';
     ts.body.static = true;
     ts.body.setMaterial(ledgeMaterial);
     tileLedges.add(ts);
@@ -197,12 +199,13 @@ function setupPhaser() {
     game.physics.p2.enable(ts2);
     //ts.body.immovable = true;
     ts2.body.static = true;
+    ts2.body.label = 'ground';
     ts2.body.setMaterial(ledgeMaterial);
     tileLedges.add(ts2);
 
     // The player and its settings
     //player = game.add.sprite(32, game.world.height - 150, 'dude');
-    player = game.add.sprite(200, world_y-1000, 'egg');
+    player = game.add.sprite(200, world_y-1000, 'egg');0
     //player.scale.setTo(.1,.1);
     
     //player.width = 128;
@@ -213,7 +216,10 @@ function setupPhaser() {
     player.body.clearShapes();
     player.body.loadPolygon('eggPhysicsData', 'egg128');
     player.body.setMaterial(playerMaterial);
+    player.body.onGround = false;
 
+    player.body.onBeginContact.add(playerHit, this);
+    player.body.onEndContact.add(playerNoHit, this);
 
     //var playerMaterial = game.physics.p2.createMaterial('playerMaterial', player.body);
    // var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial', gr.body);
@@ -221,12 +227,12 @@ function setupPhaser() {
 
     var contactMaterial = game.physics.p2.createContactMaterial(playerMaterial, ledgeMaterial);
 
-    contactMaterial.friction = 0.8;     // Friction to use in the contact of these two materials.
+    contactMaterial.friction = 0.9;     // Friction to use in the contact of these two materials.
     contactMaterial.restitution = 0.35;  // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
-    contactMaterial.stiffness = 1e7;    // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
-    contactMaterial.relaxation = 3;     // Relaxation of the resulting ContactEquation that this ContactMaterial generate.
-    contactMaterial.frictionStiffness = 1e7;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
-    contactMaterial.frictionRelaxation = 3;     // Relaxation of the resulting FrictionEquation that this ContactMaterial generate.
+    contactMaterial.stiffness = 1e20;    // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
+    //contactMaterial.relaxation = 3;     // Relaxation of the resulting ContactEquation that this ContactMaterial generate.
+    contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
+    //contactMaterial.frictionRelaxation = 3;     // Relaxation of the resulting FrictionEquation that this ContactMaterial generate.
     contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
     //  We need to enable physics on the player
     //game.physics.arcade.enable(player);
@@ -274,6 +280,19 @@ function setupPhaser() {
     game.time.events.loop(1000, updateStats, this);
   }
 
+  function playerHit(body, bodyB, shapeA, shapeB, equation) {
+    //console.log('player contact ' + body.label);
+    if (body && body.label && body.label == 'ground')
+      player.body.onGround = true;
+  }
+
+  function playerNoHit(body, bodyB, shapeA, shapeB, equation) {
+    //console.log('contact ended');
+    if (body && body.label && body.label == 'ground')
+      player.body.onGround = false;
+  }
+
+
   function updateStats() {
     $('#stats').html('FPS:' + game.time.fps);
   }
@@ -293,21 +312,25 @@ function setupPhaser() {
     
 
       //  Reset the players velocity (movement)
-      player.body.velocity.x = 0;
+      // player.body.velocity.x = 0;
       
       if (cursors.left.isDown)
       {
           //  Move to the left
-          player.body.velocity.x = -150 * player_speed;
+          // player.body.velocity.x = -150 * player_speed;
+          //player.body.thrustLeft(150 * player_speed);
 
-          player.animations.play('left');
+          player.body.force.x = (-150 * player_speed);
+         // player.animations.play('left');
       }
       else if (cursors.right.isDown)
       {
-          //  Move to the right
-          player.body.velocity.x = 150 * player_speed;
+        //  Move to the right
+        // player.body.velocity.x = 150 * player_speed;
+        //player.body.thrustRight(150 * player_speed);
+        player.body.force.x = (150 * player_speed);
 
-          player.animations.play('right');
+        //player.animations.play('right');
       }
       else
       {
@@ -319,9 +342,11 @@ function setupPhaser() {
       
       //  Allow the player to jump if they are touching the ground.
       //if (cursors.up.isDown && player.body.touching.down)
-      if (cursors.up.isDown)
+      if (cursors.up.isDown && player.body.onGround)
       {
-          player.body.velocity.y = -350;
+        player.body.velocity.y = -350;
+        //player.body.force.y = -1500;
+       // player.body.applyForce(0,0,0);
       }
 
       if (keyInputStr)
