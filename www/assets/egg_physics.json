@@ -1,0 +1,46 @@
+{ 
+    
+    "egg": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   985, 161.5  ,  1081, 245.5  ,  1160.5, 346  ,  1249.5, 502  ,  1312.5, 658  ,  1329.5, 1146  ,  785, 99.5  ,  889, 113.5  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   784, 99.5  ,  827, 1499.5  ,  611, 1468.5  ,  330.5, 544  ,  413.5, 385  ,  503.5, 262  ,  603, 169.5  ,  682, 124.5  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   915, 1488.5  ,  784, 99.5  ,  785, 99.5  ,  1329.5, 1146  ,  1289.5, 1227  ,  1223.5, 1315  ,  1148, 1383.5  ,  1034, 1450.5  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   244.5, 1063  ,  232.5, 959  ,  244.5, 823  ,  611, 1468.5  ,  505.5, 1420  ,  416, 1354.5  ,  336, 1266.5  ,  281.5, 1174  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   282.5, 671  ,  330.5, 544  ,  611, 1468.5  ,  244.5, 823  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   1329.5, 1146  ,  1312.5, 658  ,  1347.5, 786  ,  1366.5, 938  ,  1357.5, 1050  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   611, 1468.5  ,  827, 1499.5  ,  707, 1492.5  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   784, 99.5  ,  915, 1488.5  ,  827, 1499.5  ]
+        }
+    ]
+}

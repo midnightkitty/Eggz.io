@@ -22,6 +22,8 @@ var player_speed = 2;
 var keys = {};
 var keyInputStr;
 
+var tileLedge;
+
 $(document).ready(function() {
   setupSocketIO();
   setupWebRTC();
@@ -139,48 +141,118 @@ function setupPhaser() {
   game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
   function preload() {
-    game.load.image('sky', 'assets/sky.png');
-    game.load.image('ground', 'assets/platform.png');
+    //game.load.image('sky', 'assets/sky.png');
+    game.load.image('sky', 'assets/blue-sky.jpg');
+    game.load.image('ground', 'assets/grass.png');
+    game.load.image('ledge', 'assets/ledge-grass.png');
+    game.load.image('ledge-tile', 'assets/ledge-tile.png');
+    game.load.image('repeating-tile', 'assets/repeating-tile.png')
     game.load.image('star', 'assets/star.png');
     game.load.spritesheet('dude', 'assets/dude.png', 32, 48);    
+    game.load.image('egg', 'assets/egg128.png');
+    game.load.image('tetrisblock1', 'assets/tetrisblock1.png');
+
+    game.load.physics('physicsData', 'assets/sprites.json');
+    game.load.physics('eggPhysicsData', 'assets/egg_physics128.json');
   }
 
   function create() {
 
 
-    game.physics.startSystem(Phaser.Physics.ARCADE);
+    // game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.physics.startSystem(Phaser.Physics.P2JS);
+    game.physics.p2.restitution = 0.9;
+
     var sky = game.add.sprite(0, 0, 'sky');
-    sky.scale.setTo(9,9);
+    sky.scale.setTo(1.5,1.5);
 
-    //  The platforms group contains the ground and the 2 ledges we can jump on
-    platforms = game.add.group();
-    platforms.enableBody = true;
+    tileLedges = game.add.group();
 
-    var ground = platforms.create(0, 600, 'ground');
-    ground.scale.setTo(5, 2.5);
-    ground.body.immovable = true;
+    //var ground = platforms.create(0, 600, 'ground');
+    //ground.scale.setTo(5, 2.5);
+    //ground.body.immovable = true;
+
+   var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
+   var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    
 
 
-    var ledge = platforms.create(400, 400, 'ground');
-    ledge.body.immovable = true;
-    ledge = platforms.create(-150, 250, 'ground');
-    ledge.body.immovable = true;
+    var gr = new Phaser.TileSprite(game,0,world_y-100,10000,300,'repeating-tile');
+    //game.physics.arcade.enable(gr);
+    game.physics.p2.enable(gr);
+    //gr.body.immovable = true;
+    gr.body.static = true;
+    gr.body.setMaterial(ledgeMaterial);
+    tileLedges.add(gr);
+
+    var ts = new Phaser.TileSprite(game,600,world_y-400,537,50,'repeating-tile');
+    //game.physics.arcade.enable(ts);
+    game.physics.p2.enable(ts);
+    //ts.body.immovable = true;
+    ts.body.static = true;
+    ts.body.setMaterial(ledgeMaterial);
+    tileLedges.add(ts);
+
+    var ts2 = new Phaser.TileSprite(game,1500,world_y-600,1000,50,'repeating-tile');
+    //game.physics.arcade.enable(ts);
+    game.physics.p2.enable(ts2);
+    //ts.body.immovable = true;
+    ts2.body.static = true;
+    ts2.body.setMaterial(ledgeMaterial);
+    tileLedges.add(ts2);
 
     // The player and its settings
     //player = game.add.sprite(32, game.world.height - 150, 'dude');
-    player = game.add.sprite(32, 400, 'dude');
+    player = game.add.sprite(200, world_y-1000, 'egg');
+    //player.scale.setTo(.1,.1);
+    
+    //player.width = 128;
+    //player.height = 128;
+    //player.width = 64;
+   //player.height = 64;
+    game.physics.p2.enable(player, false);
+    player.body.clearShapes();
+    player.body.loadPolygon('eggPhysicsData', 'egg128');
+    player.body.setMaterial(playerMaterial);
 
+
+    //var playerMaterial = game.physics.p2.createMaterial('playerMaterial', player.body);
+   // var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial', gr.body);
+    game.physics.p2.setWorldMaterial(ledgeMaterial, true, true, true, true);
+
+    var contactMaterial = game.physics.p2.createContactMaterial(playerMaterial, ledgeMaterial);
+
+    contactMaterial.friction = 0.8;     // Friction to use in the contact of these two materials.
+    contactMaterial.restitution = 0.35;  // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
+    contactMaterial.stiffness = 1e7;    // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
+    contactMaterial.relaxation = 3;     // Relaxation of the resulting ContactEquation that this ContactMaterial generate.
+    contactMaterial.frictionStiffness = 1e7;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
+    contactMaterial.frictionRelaxation = 3;     // Relaxation of the resulting FrictionEquation that this ContactMaterial generate.
+    contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
     //  We need to enable physics on the player
-    game.physics.arcade.enable(player);
+    //game.physics.arcade.enable(player);
+
 
     //  Player physics properties. Give the little guy a slight bounce.
-    player.body.bounce.y = 0.2;
-    player.body.gravity.y = 300;
-    player.body.collideWorldBounds = true;
-    player.animations.add('left', [0, 1, 2, 3], 10, true);
-    player.animations.add('right', [5, 6, 7, 8], 10, true);
+    //player.body.bounce.y = 0.3;
+    //player.body.gravity.y = 300;
+    game.physics.p2.gravity.y = 300;
+    // player.body.collideWorldBounds = true;
+    //player.animations.add('left', [0, 1, 2, 3], 10, true);
+    //player.animations.add('right', [5, 6, 7, 8], 10, true);
 
     player.anchor.setTo(0.5, 0.5);
+
+    var tetris1 = game.add.sprite(600,4500, 'tetrisblock1');
+    game.physics.p2.enable(tetris1, false);
+    // game.physics.arcade.enable(tetris1);
+    tetris1.body.clearShapes();
+    tetris1.body.loadPolygon('physicsData', 'tetrisblock1');
+
+
+    //var ledge = platforms.create(-150, 250, 'ledge');
+    // ledge.body.immovable = true;
+
+
 
     game.world.setBounds(0,0,5000,5000);
     game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -214,7 +286,11 @@ function setupPhaser() {
   function update() {
       
       //  Collide the player and the stars with the platforms
-      var hitPlatform = game.physics.arcade.collide(player, platforms);
+      //var hitPlatform = game.physics.arcade.collide(player, platforms);
+      //game.physics.arcade.collide(player, tileLedge);
+      //game.physics.arcade.collide(player,tileLedges);
+
+    
 
       //  Reset the players velocity (movement)
       player.body.velocity.x = 0;
@@ -242,7 +318,8 @@ function setupPhaser() {
       }
       
       //  Allow the player to jump if they are touching the ground.
-      if (cursors.up.isDown && player.body.touching.down)
+      //if (cursors.up.isDown && player.body.touching.down)
+      if (cursors.up.isDown)
       {
           player.body.velocity.y = -350;
       }

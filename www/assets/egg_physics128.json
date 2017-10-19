@@ -1,0 +1,31 @@
+{ 
+    
+    "egg128": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   70, 7.5  ,  80, 14  ,  89, 21.5  ,  95.95744323730469, 31.829788208007812  ,  29.5, 34  ,  36, 24  ,  44.5, 15  ,  57, 7  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   73, 119.5  ,  36, 111.5  ,  23.5, 98  ,  17.5, 82  ,  17.5, 68  ,  109.5, 67  ,  104, 97  ,  91, 112  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   36, 111.5  ,  73, 119.5  ,  54, 119.5  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   104, 97  ,  109.5, 67  ,  109.5, 83  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   95.95744323730469, 31.829788208007812  ,  101.5, 42  ,  106, 55  ,  109.5, 67  ,  17.5, 68  ,  20, 57  ,  23.5, 47  ,  29.5, 34  ]
+        }
+    ]
+}
