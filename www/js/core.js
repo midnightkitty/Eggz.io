@@ -57,7 +57,7 @@ class Messenger {
                 var t_sent = parseInt(time);
                 var t_rec = parseInt(Date.now());
                 var delta = (t_rec - t_sent) / 1000;
-                console.log('WS Ping roundtrip took: ' + delta + 's');
+                console.log('WS Ping roundtrip took: ' + delta * 1000+ 's');
                 pingsWS.splice(pingsWS.indexOf(ping), 1);
                 updateWSPing(delta);
               }
@@ -68,7 +68,7 @@ class Messenger {
 
 function updateWSPing(delta) {
     // console.log('updateWSPing');
-    $('#ws-ping').html('WS Ping: ' + delta + 's queue[' + pingsWS.length + ']');    
+    $('#ws-ping').html('WS Ping: ' + delta*1000 + 'ms queue[' + pingsWS.length + ']');    
 }
 
 //

@@ -110,14 +110,14 @@ function handleClientWSMessage(socket, data) {
 }
 
 function consumeWSMessage(socket, type, result) {
-  console.log(result);
+  //console.log(result);
   if (type == 'w') {
     var r = result.split('.');
     var id = r[0];
     var t_sent = parseInt(r[1]);
 
     var t_rec = parseInt(Date.now());
-    console.log('sending WS ping back to client');
+    //console.log('sending WS ping back to client');
     socket.emit('data', 'w-' + id + '.' + t_rec);
   }
 }
@@ -215,7 +215,13 @@ class PeerConnection {
   
   create_data_channels(socketid) {
     // console.log('calling createDataChannel');
-    this.dc1 = this.pc1.createDataChannel(socketid);
+
+    this.dc1 = this.pc1.createDataChannel(socketid, { 'reliable': { 
+                                                                            ordered: false,
+                                                                            maxRetransmits: 0,
+                                                                            maxPacketLifeTime: 0
+                                                                           }
+                                                                          });
 
     this.dc1.onopen = function() {
       console.log("data channel open with user");
