@@ -65,9 +65,9 @@ class ClientMessenger extends Messenger {
       
       pingsDC.forEach(function(ping) {
         if (ping.id == id) {
-          var t_sent = parseInt(time);
+          var t_sent = parseInt(ping.time);
           var t_rec = parseInt(Date.now());
-          var delta = (t_rec - t_sent) / 1000;
+          var delta = t_rec - t_sent;
           // console.log('DC Ping roundtrip took: ' + delta + 's');
           pingsDC.splice(pingsDC.indexOf(ping), 1);
           updateDCPing(delta);

@@ -56,7 +56,7 @@ class Messenger {
               if (ping.id == id) {
                 var t_sent = parseInt(time);
                 var t_rec = parseInt(Date.now());
-                var delta = (t_rec - t_sent) / 1000;
+                var delta = t_rec - t_sent;
                 //console.log('WS Ping roundtrip took: ' + delta * 1000+ 's');
                 pingsWS.splice(pingsWS.indexOf(ping), 1);
                 updateWSPing(delta);
