@@ -1,9 +1,13 @@
 // code shared by the server and client
 
 class Player {
-    constructor(sprite, id) {
-        this.sprite = sprite; // Phaser sprite
-        this.id = id; // socket ID
+    constructor(sprite, id, socket, x, y) {
+        this.sprite = sprite;
+        this.id = id;    
+        this.socket = socket;
+        this.x = x;
+        this.y = y;
+        this.angle;
     }
 }
 
@@ -15,8 +19,8 @@ class Messenger {
     }
     
     client_sendDC(type, data) {
-        console.log(type + '-' + data);
-         this.dc.send(type + '-' + data);
+        // console.log(type + '-' + data);
+        this.dc.send(type + '-' + data);
     }
 
     client_sendWS(type, data) {
@@ -28,7 +32,7 @@ class Messenger {
     handleMessage(data) {
         var type = data.substring(0,1);
         var result = data.substring(2,data.length);
-        console.log(type + ':' + result);
+        // console.log(type + ':' + result);
         this.consumeMessage(type, result);
     }
 
@@ -109,7 +113,7 @@ function setupPhaserGame() {
       contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
       contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
   
-      player = game.add.sprite(200, world_y-1000, 'egg');0
+      player = game.add.sprite(200, world_y-1000, 'egg');
       game.physics.p2.enable(player, false);
       player.body.clearShapes();
       player.body.loadPolygon('eggPhysicsData', 'egg128');
@@ -130,7 +134,9 @@ function setupPhaserGame() {
       game.time.advancedTiming = true;
   
       // add local user to users list
-      localPlayer = new Player(player,socket.id);
+      localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y);
+
+      console.log('created local player with id: ' + socket.id);
   
       game.time.events.loop(1000, updateStats, this);
     }
@@ -173,11 +179,49 @@ function setupPhaserGame() {
           player.body.velocity.y = -350;
         }
   
-        if (keyInputStr) {
-          msg.client_sendDC('i', keyInputStr);
+        if (keyInputStr && msg) {
+
+            var input_update = {
+                id: localPlayer.id,
+                keys: keyInputStr,
+                x: localPlayer.sprite.x,
+                y: localPlayer.sprite.y,
+                angle: localPlayer.sprite.angle
+            }
+            // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
+            // console.log(JSON.stringify(input_update));
+            msg.client_sendDC('i', JSON.stringify(input_update));
+        }
+        else if (msg) {
+            var input_update = {
+                id: localPlayer.id,
+                keys: null,
+                x: localPlayer.sprite.x,
+                y: localPlayer.sprite.y,
+                angle: localPlayer.sprite.angle
+            }
+            // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
+            // console.log(JSON.stringify(input_update));
+            msg.client_sendDC('i', JSON.stringify(input_update));
         }
     }
-  }
+}
+
+function addPlayerSprite() {
+    var newPlayerSprite = game.add.sprite(getRandomInt(0,800), world_y-600, 'egg');
+    newPlayerSprite.anchor.setTo(0.5, 0.5);
+    //game.physics.p2.enable(newPlayerSprite, false);
+    //newPlayerSprite.body.clearShapes();
+    //newPlayerSprite.body.loadPolygon('eggPhysicsData', 'egg128');
+    return newPlayerSprite;
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
 
 // Try will fail when included by the client browser
 try {

@@ -42,17 +42,54 @@ class ClientMessenger extends Messenger {
 
   // l- player list
   // m - message
+  // p - player positions
   handleMessage(data) {
     var type = data.substring(0,1);
     var result = data.substring(2,data.length);
-    //console.log('' + type + ':' + result);
+    // console.log('' + type + ':' + result);
 
     if (type == 'l') {
       updateLeaderboard(JSON.parse(result));
     }
+    else if (type == 'p') {
+      // console.log('player posiitons update');
+      // console.log(JSON.parse(result));
+      updatePlayers(JSON.parse(result));
+    }
   }
 }
 
+function updatePlayers(serverPlayers) {
+  serverPlayers.forEach(function(sPlayer) {
+    
+    if (sPlayer.id != localPlayer.id) {
+      var player_found = false;
+      players.forEach(function(player) {
+        if (sPlayer.id == player.id) {
+          // console.log('player found, updating');
+          player.x = sPlayer.x;
+          player.y = sPlayer.y;
+
+          player.sprite.x = sPlayer.x;
+          player.sprite.y = sPlayer.y;
+          player.sprite.angle = sPlayer.angle;
+          player_found = true;
+        }
+      });
+
+      if (!player_found) {
+        console.log('adding player');
+        addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y)
+      }
+    }
+  });
+}
+
+function addNewPlayer(id, x, y) {
+  var sprite = addPlayerSprite();
+  var newPlayer = new Player(sprite, id, null, x, y);
+  players.push(newPlayer);
+}
 
 //
 // Leaderboard
@@ -92,6 +129,14 @@ function pageSetup() {
 // Keyboard menu setup
 //
 function keyboardSetup() {
+
+  $(document).keypress(function(e) {
+    //console.log(e.keyCode);
+    if (e.keyCode == 48) {
+      addPlayerSprite();
+    }
+  });
+
 
   $(document).keydown(function(e) {
     // console.log('key pressed:' + e.keyCode);

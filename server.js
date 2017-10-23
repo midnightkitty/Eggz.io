@@ -4,8 +4,10 @@ var port = process.env.PORT || 8081;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
+var util = require('util');
 
 var Messenger = require('./www/js/core.js').Messenger;
+var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
 // webrtc aliases
@@ -35,11 +37,12 @@ http.listen(port, function(){
 //  WebSocket
 //
 
-var clients = [];
+var players = [];
 
 io.on('connection', function(socket) {
   console.log('a user connected via webSocket');
-  clients.push(socket);
+  players.push(new Player(null, socket.id, socket, 0, 0));
+  //clients.push(socket);
 
   // making new peer connection
   // console.log('making new peer connection');
@@ -48,7 +51,14 @@ io.on('connection', function(socket) {
 
   socket.on('disconnect', function(){
       console.log('user disconnected');
-      clients.splice(clients.indexOf(socket), 1);
+
+      for(var player of players) {
+        if (socket.id == player.id) {
+          players.splice(players.indexOf(player), 1);
+        }
+      }
+
+      // clients.splice(clients.indexOf(socket), 1);
   });
 
   socket.on('wrtc_answer', function(data) {
@@ -93,12 +103,37 @@ class ServerMessenger extends Messenger {
   }
 }
 
-msg = new ServerMessenger();
+function handleClientMessage(data) {
+  var type = data.substring(0,1);
+  var result = data.substring(2,data.length);
+  consumeMessage(type, result);
+}
+
+function consumeMessage(type, result) {
+ //console.log(type + ' ' + result);
+  if (type == 'i') {
+    //console.log('client input received');
+    var input = JSON.parse(result);
+
+    // update player position
+    players.forEach(function(player)  {
+      if (player.id == input.id) {
+        player.x = input.x;
+        player.y = input.y;
+        player.angle = input.angle;
+
+        //console.log(player);
+      }
+    });
+  }
+}
 
 class PeerConnection {
 
   constructor(socketid) {
+
     this.socketid = socketid;
+    this.dc1 = null;
     // io.to(this.socketid).emit('msg','lets get loco!!!');
     // console.log('making new RTCPeerConnection')
     this.pc1 = new RTCPeerConnection(
@@ -120,6 +155,10 @@ class PeerConnection {
     }.bind(this);
   }
 
+  send(data) {
+    this.dc1.send(data);
+  }
+
   handleAddIceCandidateSuccess() {
    // console.log('add ice succeeded');
   }
@@ -137,20 +176,24 @@ class PeerConnection {
   
   create_data_channels(socketid) {
     // console.log('calling createDataChannel');
-    var dc1 = this.pc1.createDataChannel(socketid);
+    this.dc1 = this.pc1.createDataChannel(socketid);
 
-    dc1.onopen = function() {
+    this.dc1.onopen = function() {
       console.log("data channel open with user");
-      dc1.onmessage = function(event) {
+      this.dc1.onmessage = function(event) {
         var data = event.data;
         //console.log(data);
         // console.log("dc1: sending 'pong'");
         // dc1.send("echo from data channel");
-        msg.handleMessage(data);
+        this.handleDCMsg(data);
         // io.to(this.socketid).emit('msg','sending message over data channel');        
-      }  
-    }
+      }.bind(this);  
+    }.bind(this);
     this.create_offer();
+  }
+
+  handleDCMsg(data) {
+    handleClientMessage(data);
   }
   
   create_offer() {
@@ -194,31 +237,108 @@ class PeerConnection {
   
   done() {
     // console.log('cleanup');
-    this.pc1.close();
+    this.pc1.close(); 
     // console.log('done');
   }
 }
 
 setInterval(function() { 
 
-  if (clients) {
+  if (players) {
     var player_list = [];
-    clients.forEach(function(client) {
+    players.forEach(function(player) {
 
       player_list.push({
-        client: client.id
+        player: player.id
       });
     }, this);
     console.log('conected client websockets: ' + JSON.stringify(player_list));
-    io.emit('player_list', JSON.stringify(player_list));
-    io.emit('data','l-' + JSON.stringify(player_list));
+    //io.emit('player_list', JSON.stringify(player_list));
+    //io.emit('data','l-' + JSON.stringify(player_list));
+
+    // send player list to all players
+    players.forEach(function(player)  {
+      player.socket.pc.send('l-' + JSON.stringify(player_list));
+    });
 
   }
-}, 3000);
+}, 10000);
+
+/**
+Length of a tick in milliseconds. The denominator is your desired framerate.
+e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
+*/
+var tickLengthMs = 1000 / 20;
+
+/* gameLoop related variables */
+// timestamp of each loop
+var previousTick = Date.now();
+// number of times gameLoop gets called
+var actualTicks = 0;
+
+function gameLoop() {
+  var now = Date.now();
+
+  actualTicks++;
+  if (previousTick + tickLengthMs <= now) {
+    var delta = (now - previousTick) / 1000;
+    previousTick = now;
+
+    update(delta);
+
+    //console.log('delta', delta, '(target: ' + tickLengthMs +' ms)', 'node ticks', actualTicks);
+    actualTicks = 0;
+  }
+
+  if (Date.now() - previousTick < tickLengthMs - 16) {
+    setTimeout(gameLoop);
+  } else {
+    setImmediate(gameLoop);
+  }
+}
 
 
+/**
+Update is normally where all of the logic would go. In this case we simply call
+a function that takes 10 milliseconds to complete thus simulating that our game
+had a very busy time.
+*/
+function update(delta) {
+  // console.log('tick: ' + delta);
 
 
+  var player_update = [];
+
+  players.forEach(function(player)  {
+    var p = {};
+    p.id = player.id;
+    p.x = player.x;
+    p.y = player.y;
+    p.angle = player.angle;
+    player_update.push(p);
+  });
+  //console.log('sending update');
+  //console.log(player_update);
+
+  players.forEach(function(player)  {
+    player.socket.pc.send('p-' + JSON.stringify(player_update));
+  });
 
 
+ // aVerySlowFunction(10);
+}
 
+/**
+A function that wastes time, and occupies 100% CPU while doing so.
+Suggested use: simulating that a complex calculation took time to complete.
+*/
+function aVerySlowFunction(milliseconds) {
+  // waste time
+  var start = Date.now();
+  while (Date.now() < start + milliseconds) { 
+
+  }  
+}
+
+// begin the loop !
+gameLoop();
