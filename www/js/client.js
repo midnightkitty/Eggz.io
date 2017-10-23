@@ -360,7 +360,7 @@ setInterval(function() {
   pingsDC.push({ id: id, time: t });
   msg.client_sendDC('g', id + '.' + t);
 
-}, 3000);
+}, 2000);
 
 
 //
@@ -376,5 +376,5 @@ setInterval(function() {
     pingsWS.push({ id: id, time: t });
     msg.client_sendWS('w', id + '.' + t);
   
-  }, 3000);
+  }, 2000);
   
