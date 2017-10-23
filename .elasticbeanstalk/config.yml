@@ -2,6 +2,8 @@ branch-defaults:
   master:
     environment: wrtc-env
     group_suffix: null
+  wpm:
+    environment: wrtc-env
   wrtc+phaser:
     environment: wrtc-env
 global:

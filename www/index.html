@@ -3,6 +3,7 @@
         <title>wrtc+phaser</title>
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="js/uuid.js"></script>
         <script src="js/wrtc.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="//cdn.jsdelivr.net/phaser/2.6.2/phaser.js"></script>
@@ -133,6 +134,30 @@
                 position:absolute; 
                 bottom:10px;
             }  
+            #ws-ping { 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                margin: 0; 
+                padding: 0; 
+                right: 10px;
+                position:absolute; 
+                bottom:70px;
+            }                          
+            #dc-ping { 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                margin: 0; 
+                padding: 0; 
+                right: 10px;
+                position:absolute; 
+                bottom:40px;
+            }              
             body {
                 margin:0; 
                 width:100%; 
@@ -162,6 +187,8 @@
             <div id="user-id" contenteditable="true" spellcheck="false"></div>
             <div id="login-button">Join</div>
         </span>
+        <span id="ws-ping">...</span>  
+        <span id="dc-ping">...</span>        
         <span id="stats">...</span>
     </body>
 </html>

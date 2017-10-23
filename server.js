@@ -74,7 +74,7 @@ io.on('connection', function(socket) {
   });
   
   socket.on('data', function(data) {
-    msg.handleMessage(data);
+    handleClientWSMessage(socket, data);
   })
 
   socket.on('candidate', function(data) {
@@ -103,13 +103,33 @@ class ServerMessenger extends Messenger {
   }
 }
 
-function handleClientMessage(data) {
+function handleClientWSMessage(socket, data) {
   var type = data.substring(0,1);
   var result = data.substring(2,data.length);
-  consumeMessage(type, result);
+  consumeWSMessage(socket, type, result);
 }
 
-function consumeMessage(type, result) {
+function consumeWSMessage(socket, type, result) {
+  console.log(result);
+  if (type == 'w') {
+    var r = result.split('.');
+    var id = r[0];
+    var t_sent = parseInt(r[1]);
+
+    var t_rec = parseInt(Date.now());
+    console.log('sending WS ping back to client');
+    socket.emit('data', 'w-' + id + '.' + t_rec);
+  }
+}
+
+
+function handleClientDCMessage(dc1, data) {
+  var type = data.substring(0,1);
+  var result = data.substring(2,data.length);
+  consumeDCMessage(dc1, type, result);
+}
+
+function consumeDCMessage(dc1, type, result) {
  //console.log(type + ' ' + result);
   if (type == 'i') {
     //console.log('client input received');
@@ -125,6 +145,25 @@ function consumeMessage(type, result) {
         //console.log(player);
       }
     });
+  }
+  // ping from Data Channel
+  // format: id.timestamp
+  // 265b8d00-b809-11e7-8cda-4964e5318dbc.1508773509584
+  else if (type == 'g') {
+    var r = result.split('.');
+    var id = r[0];
+    var t_sent = parseInt(r[1]);
+
+    //console.log(id + " : " + t_sent);
+
+    //var t_sent = r.time;
+    var t_rec = parseInt(Date.now());
+    
+    //console.log(t_rec + ',' + t_sent);
+    //console.log('UDP Ping took: ' + ((t_rec-t_sent)/1000) + 's');
+    dc1.send('g-' + id + '.' + t_rec);
+
+
   }
 }
 
@@ -185,15 +224,15 @@ class PeerConnection {
         //console.log(data);
         // console.log("dc1: sending 'pong'");
         // dc1.send("echo from data channel");
-        this.handleDCMsg(data);
+        this.handleDCMsg(this.dc1,data);
         // io.to(this.socketid).emit('msg','sending message over data channel');        
       }.bind(this);  
     }.bind(this);
     this.create_offer();
   }
 
-  handleDCMsg(data) {
-    handleClientMessage(data);
+  handleDCMsg(dc1, data) {
+    handleClientDCMessage(dc1, data);
   }
   
   create_offer() {

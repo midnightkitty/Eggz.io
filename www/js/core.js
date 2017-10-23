@@ -33,12 +33,42 @@ class Messenger {
         var type = data.substring(0,1);
         var result = data.substring(2,data.length);
         // console.log(type + ':' + result);
-        this.consumeMessage(type, result);
     }
 
-    consumeMessage(type, result) {
-        //
+    handleWSMessage(data) {
+        var type = data.substring(0,1);
+        var result = data.substring(2,data.length);
+        this.consumeWSMessage(type, result);      
     }
+
+    consumeDCMessage(type, result) {
+        if (type == 'g') {
+            console.log(result);
+        }
+    }
+    consumeWSMessage(type, result) {
+        if (type == 'w') {
+            var r = result.split('.');
+            var id = r[0];
+            var time = r[1];
+            
+            pingsWS.forEach(function(ping) {
+              if (ping.id == id) {
+                var t_sent = parseInt(time);
+                var t_rec = parseInt(Date.now());
+                var delta = (t_rec - t_sent) / 1000;
+                console.log('WS Ping roundtrip took: ' + delta + 's');
+                pingsWS.splice(pingsWS.indexOf(ping), 1);
+                updateWSPing(delta);
+              }
+            });    
+        }
+    }
+}
+
+function updateWSPing(delta) {
+    // console.log('updateWSPing');
+    $('#ws-ping').html('WS Ping: ' + delta + 's queue[' + pingsWS.length + ']');    
 }
 
 //

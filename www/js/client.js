@@ -9,8 +9,9 @@ var platforms;
 var player;
 var cursors;
 
+var pingsDC = [];
+var pingsWS = [];
 var players = [];
-
 var localPlayer = {};
 
 // total world dimensions
@@ -48,15 +49,39 @@ class ClientMessenger extends Messenger {
     var result = data.substring(2,data.length);
     // console.log('' + type + ':' + result);
 
-    if (type == 'l') {
+    // leaderboard update
+    if (type == 'l') { 
       updateLeaderboard(JSON.parse(result));
-    }
+    } // Other player position updates
     else if (type == 'p') {
       // console.log('player posiitons update');
       // console.log(JSON.parse(result));
       updatePlayers(JSON.parse(result));
-    }
+    } // Data Channel ping
+    else if (type == 'g') {
+      var r = result.split('.');
+      var id = r[0];
+      var time = r[1];
+      
+      pingsDC.forEach(function(ping) {
+        if (ping.id == id) {
+          var t_sent = parseInt(time);
+          var t_rec = parseInt(Date.now());
+          var delta = (t_rec - t_sent) / 1000;
+          // console.log('DC Ping roundtrip took: ' + delta + 's');
+          pingsDC.splice(pingsDC.indexOf(ping), 1);
+          updateDCPing(delta);
+        }
+      });
+    } 
   }
+}
+
+function updateDCPing(delta) {
+
+  // console.log('updateDCPing');
+  $('#dc-ping').html('DC Ping: ' + delta + 's queue[' + pingsDC.length + ']');
+
 }
 
 function updatePlayers(serverPlayers) {
@@ -196,7 +221,8 @@ function setupSocketIO() {
   });
 
   socket.on('data', function(data) {
-    msg.handleMessage(data);
+    //console.log(data);
+    msg.handleWSMessage(data);
   });
 
   socket.on('wrtc_offer', function(data) {
@@ -320,3 +346,35 @@ function setupWebRTC() {
   //  console.log('done');
   }
 
+
+//
+// DataChannel Ping
+//
+setInterval(function() {
+
+  var id = uuidv1();
+  var t = Date.now();
+  // console.log(id + '.' + t);
+
+  // send Data Channel ping
+  pingsDC.push({ id: id, time: t });
+  msg.client_sendDC('g', id + '.' + t);
+
+}, 3000);
+
+
+//
+// WebSocket Ping
+//
+setInterval(function() {
+  
+    var id = uuidv1();
+    var t = Date.now();
+    // console.log(id + '.' + t);
+  
+    // send Data Channel ping
+    pingsWS.push({ id: id, time: t });
+    msg.client_sendWS('w', id + '.' + t);
+  
+  }, 3000);
+  
