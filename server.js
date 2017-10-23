@@ -216,7 +216,8 @@ class PeerConnection {
   create_data_channels(socketid) {
     // console.log('calling createDataChannel');
 
-    this.dc1 = this.pc1.createDataChannel(socketid, { ordered: false,
+    this.dc1 = this.pc1.createDataChannel(socketid, { reliable: false,
+                                                                            ordered: false,
                                                                             maxRetransmits: 0,
                                                                             maxPacketLifeTime: 0
                                                                            });
@@ -310,7 +311,7 @@ setInterval(function() {
 Length of a tick in milliseconds. The denominator is your desired framerate.
 e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
 */
-var tickLengthMs = 1000 / 300;
+var tickLengthMs = 1000 / 60;
 
 /* gameLoop related variables */
 // timestamp of each loop
