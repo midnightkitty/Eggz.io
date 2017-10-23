@@ -216,13 +216,10 @@ class PeerConnection {
   create_data_channels(socketid) {
     // console.log('calling createDataChannel');
 
-    this.dc1 = this.pc1.createDataChannel(socketid, { 'reliable': { 
-                                                                            ordered: false,
+    this.dc1 = this.pc1.createDataChannel(socketid, { ordered: false,
                                                                             maxRetransmits: 0,
                                                                             maxPacketLifeTime: 0
-                                                                           }
-                                                                          });
-
+                                                                           });
     this.dc1.onopen = function() {
       console.log("data channel open with user");
       this.dc1.onmessage = function(event) {
