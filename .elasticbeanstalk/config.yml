@@ -1,15 +1,11 @@
 branch-defaults:
-  master:
-    environment: wrtc-env
-    group_suffix: null
   wpm:
-    environment: wrtc-env
-  wrtc+phaser:
-    environment: wrtc-env
+    environment: wpm-env
+    group_suffix: null
 global:
-  application_name: wrtc
+  application_name: wpm
   branch: null
-  default_ec2_keyname: aws-eb
+  default_ec2_keyname: elasticrtc
   default_platform: Node.js
   default_region: us-east-1
   include_git_submodules: true

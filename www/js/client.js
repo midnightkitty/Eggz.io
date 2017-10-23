@@ -80,7 +80,7 @@ class ClientMessenger extends Messenger {
 function updateDCPing(delta) {
 
   // console.log('updateDCPing');
-  $('#dc-ping').html('DC Ping: ' + delta * 1000 + 'ms queue[' + pingsDC.length + ']');
+  $('#dc-ping').html('DC Ping: ' + delta + 's queue[' + pingsDC.length + ']');
 
 }
 
