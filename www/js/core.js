@@ -68,7 +68,7 @@ class Messenger {
 
 function updateWSPing(delta) {
     // console.log('updateWSPing');
-    $('#ws-ping').html('WS Ping: ' + delta  + 's queue[' + pingsWS.length + ']');    
+    $('#ws-ping').html('WS Ping: ' + delta  + 'ms queue[' + pingsWS.length + ']');    
 }
 
 //

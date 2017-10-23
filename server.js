@@ -311,7 +311,7 @@ setInterval(function() {
 Length of a tick in milliseconds. The denominator is your desired framerate.
 e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
 */
-var tickLengthMs = 1000 / 60;
+var tickLengthMs = 1000 / 20;
 
 /* gameLoop related variables */
 // timestamp of each loop
