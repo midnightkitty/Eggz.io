@@ -1,0 +1,19 @@
+version: 0.0
+os: linux 
+files:
+  - source: /server.js
+    destination: /var/app/
+  - source: /server_simple-client.js
+    destination: /var/app/
+  - source: /simple_client.js
+    destination: /var/app/
+  - source: /simple_server.js
+    destination: /var/app/
+  - source: /package.json
+    destination: /var/app/
+  - source: ./www/
+    destination: /var/app/www/
+  - source: /www/js/
+    destination: /var/app/www/js/
+  - source: /www/assets
+    destination: /var/app/www/assets/
