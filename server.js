@@ -293,7 +293,7 @@ setInterval(function() {
 
       player_list.push({
         player: player.id
-      });
+      });  
     }, this);
     console.log('conected client websockets: ' + JSON.stringify(player_list));
     //io.emit('player_list', JSON.stringify(player_list));
@@ -311,7 +311,7 @@ setInterval(function() {
 Length of a tick in milliseconds. The denominator is your desired framerate.
 e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
 */
-var tickLengthMs = 1000 / 3;
+var tickLengthMs = 1000 / 100;
 
 /* gameLoop related variables */
 // timestamp of each loop

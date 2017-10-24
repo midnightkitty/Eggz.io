@@ -341,9 +341,9 @@ function setupWebRTC() {
   }
 
   function done() {
-  // console.log('cleanup');
-  //  pc2.close();
-  //  console.log('done');
+    console.log('cleanup');
+    pc2.close();
+    console.log('done');
   }
 
 

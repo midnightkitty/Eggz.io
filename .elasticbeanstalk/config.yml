@@ -1,6 +1,6 @@
 branch-defaults:
   wpm:
-    environment: wrtc8
+    environment: wrtc9
 environment-defaults:
   wrtc-node:
     branch: null
