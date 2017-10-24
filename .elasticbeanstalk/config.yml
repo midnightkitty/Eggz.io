@@ -1,9 +1,9 @@
 branch-defaults:
   wpm:
-    environment: wrtcpm
+    environment: null
     group_suffix: null
 global:
-  application_name: wrtcpm
+  application_name: wrtc-ph
   branch: null
   default_ec2_keyname: wpmd
   default_platform: Node.js
