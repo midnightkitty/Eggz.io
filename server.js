@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var port = process.env.PORT || 8081; 
+var port = 3000; // forwarded from port 80 on nginx 
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var webrtc = require('wrtc');
@@ -311,7 +311,7 @@ setInterval(function() {
 Length of a tick in milliseconds. The denominator is your desired framerate.
 e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
 */
-var tickLengthMs = 1000 / 100;
+var tickLengthMs = 1000 / 60;
 
 /* gameLoop related variables */
 // timestamp of each loop

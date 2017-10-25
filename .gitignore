@@ -1,6 +1,12 @@
 node_modules/
-.gitignore
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
+eggz-wrtc.pem
+package-lock.json
+server_simple-client.js
+simple_client.js
+simple_server.js
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+

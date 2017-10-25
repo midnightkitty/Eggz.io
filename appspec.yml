@@ -1,0 +1,15 @@
+version: 0.0
+os: linux 
+files:
+  - source: /.gitignore
+    destination: /jet/app/eggz-wrtc/
+  - source: /appspec.yml
+    destination: /jet/app/eggz-wrtc/
+  - source: /package.json
+    destination: /jet/app/eggz-wrtc/
+  - source: /README.md
+    destination: /jet/app/eggz-wrtc/      
+  - source: /server.js
+    destination: /jet/app/eggz-wrtc/
+  - source: ./www
+    destination: /jet/app/eggz-wrtc/www/
