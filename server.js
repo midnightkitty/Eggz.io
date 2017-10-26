@@ -10,6 +10,8 @@ var Messenger = require('./www/js/core.js').Messenger;
 var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
+const server_fps = 45; // server update frequency in updates / second
+
 // webrtc aliases
 var RTCPeerConnection      = webrtc.RTCPeerConnection;
 var RTCSessionDescription = webrtc.RTCSessionDescription;
@@ -311,7 +313,7 @@ setInterval(function() {
 Length of a tick in milliseconds. The denominator is your desired framerate.
 e.g. 1000 / 20 = 20 fps,  1000 / 60 = 60 fps
 */
-var tickLengthMs = 1000 / 60;
+var tickLengthMs = 1000 / server_fps;
 
 /* gameLoop related variables */
 // timestamp of each loop
@@ -350,7 +352,11 @@ function update(delta) {
   // console.log('tick: ' + delta);
 
 
-  var player_update = [];
+  var serverUpdate = {
+    time: Date.now(),
+    player_update: []
+  }
+
 
   players.forEach(function(player)  {
     var p = {};
@@ -358,13 +364,13 @@ function update(delta) {
     p.x = player.x;
     p.y = player.y;
     p.angle = player.angle;
-    player_update.push(p);
+    serverUpdate.player_update.push(p);
   });
   //console.log('sending update');
   //console.log(player_update);
 
   players.forEach(function(player)  {
-    player.socket.pc.send('p-' + JSON.stringify(player_update));
+    player.socket.pc.send('p-' + JSON.stringify(serverUpdate));
   });
 
 

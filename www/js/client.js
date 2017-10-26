@@ -9,14 +9,22 @@ var platforms;
 var player;
 var cursors;
 
+var server_time;
+var client_time;
+var server_updates = [];            // log of server updates for interpolation
+const net_offset = 2000;            // ms behind server that we update data from the server
+const buffer_size = 50;              // seconds of server_updates to keep cached
+const desired_server_fps = 60;   // desired server update rate, may vary and be much lower
+this.target_time = 0.01;            // the time where we want to be in the server timeline
+
 var pingsDC = [];
 var pingsWS = [];
 var players = [];
 var localPlayer = {};
 
 // total world dimensions
-var world_x = 5000; 
-var world_y = 5000;
+const world_x = 5000; 
+const world_y = 5000;
 
 var player_speed = 2;
 
@@ -78,37 +86,138 @@ class ClientMessenger extends Messenger {
 }
 
 function updateDCPing(delta) {
-
   // console.log('updateDCPing');
   $('#dc-ping').html('DC Ping: ' + delta + 'ms queue[' + pingsDC.length + ']');
-
 }
 
-function updatePlayers(serverPlayers) {
-  serverPlayers.forEach(function(sPlayer) {
-    
-    if (sPlayer.id != localPlayer.id) {
-      var player_found = false;
-      players.forEach(function(player) {
-        if (sPlayer.id == player.id) {
-          // console.log('player found, updating');
-          player.x = sPlayer.x;
-          player.y = sPlayer.y;
+//
+// Update from server
+//
+function updatePlayers(serverUpdate) {
+  // store the server time of this update, it's offset by latency in the network
+  //console.log(serverUpdate.time);
+  server_time = serverUpdate.time; 
+  client_time = server_time - net_offset;
 
-          player.sprite.x = sPlayer.x;
-          player.sprite.y = sPlayer.y;
-          player.sprite.angle = sPlayer.angle;
-          player_found = true;
-        }
-      });
+  // cache the server update
+  server_updates.push(serverUpdate);
 
-      if (!player_found) {
-        console.log('adding player');
-        addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y)
-      }
+  // save a cache of the server updates, but only a couple seconds worth
+  if(server_updates.length > (desired_server_fps * buffer_size)) {
+    server_updates.splice(0,1); // remove the oldest update
+  }
+  //console.log('server_update_cache_size: ' + server_updates.length);
+
+  var current_time = client_time;
+  var count = server_updates.length - 1;
+  var target = null;
+  var previous = null;
+
+  // find the current time (client_time) in the timeline
+  // of server updates
+  for (var i = 0; i < count; ++i) {
+    var point = server_updates[i];
+    var next_point = server_updates[i+1];
+
+    if (current_time > point.time && current_time < next_point.time) {
+        target = next_point;
+        previous = point;
+        // console.log('current time found in server_updates timeline');
+        break;
     }
-  });
+  }
+
+  // If no target is found,  store the last known server position and move there instead
+  if(!target) {
+    target = server_updates[0];
+    previous = server_updates[0];
+  }
+
+
+  if (target && previous) {
+
+    target_time = target.time;
+
+    var difference = target_time - current_time;
+    var max_difference = (target.time - previous.time).toFixed(3);
+    var time_point = (difference/max_difference).toFixed(3);
+
+    // most recent server update
+    var latest_server_data = server_updates[server_updates.length-1];
+
+    serverUpdate.player_update.forEach(function(sPlayer) {
+      
+      if (sPlayer.id != localPlayer.id) {
+        var player_found = false;
+        players.forEach(function(player) {
+          if (sPlayer.id == player.id) {
+            // save the serverPlayer we just found
+            //var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
+            // We found a player on the server that already exists on the server
+            // we need to update its position
+
+            var target_pos = {};
+            var past_pos = {};
+            var target_angle;
+            var past_angle;
+            
+            // find the target position of each enemy player
+            target.player_update.forEach(function(tPlayer) {
+              if (player.id == tPlayer.id) {
+                target_pos = { x: tPlayer.x, y: tPlayer.y };
+                target_angle = tPlayer.angle; 
+              }
+            });
+
+            previous.player_update.forEach(function(pPlayer) {
+              if (player.id == pPlayer.id) {
+                past_pos = { x:pPlayer.x, y:pPlayer.y };
+                past_angle = pPlayer.angle;
+              }
+            });
+
+
+            //
+            // Smoothing
+            //
+            var ghost_pos = v_lerp(past_pos, target_pos, time_point);
+            var ghost_angle = lerp(past_angle, target_angle, time_point);
+            console.log(ghost_pos);
+            player.sprite.x = ghost_pos.x;
+            player.sprite.y = ghost_pos.y;
+            player.sprite.angle = ghost_angle;
+
+            // console.log('updating player position based on raw data');
+            // update player position with raw data from the server
+            //player.sprite.x = sPlayer.x;
+           // player.sprite.y = sPlayer.y;
+            //player.sprite.angle = sPlayer.angle;
+            
+
+            player_found = true;
+          }
+        });
+
+        if (!player_found) {
+          console.log('adding player');
+          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y)
+        }
+      }
+    });
+  }
 }
+
+function lerp(p, n, t) {
+  var _t = Number(t); 
+  _t = (Math.max(0, Math.min(1, _t))).toFixed(3); 
+  return (p + _t * (n - p)).toFixed(3);
+}
+
+function v_lerp(v, tv, t) { 
+  //console.log('calculating v_lerp');
+  return { x: this.lerp(v.x, tv.x, t), 
+               y: this.lerp(v.y, tv.y, t) }; 
+};
 
 function addNewPlayer(id, x, y) {
   var sprite = addPlayerSprite();

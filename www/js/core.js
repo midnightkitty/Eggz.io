@@ -93,6 +93,9 @@ function setupPhaserGame() {
   
     function create() {
   
+    //    game.time.advancedTiming = true;
+    //    game.time.desiredFps = 45;
+
       game.physics.startSystem(Phaser.Physics.P2JS);
   
       var sky = game.add.sprite(0, 0, 'sky');
