@@ -11,11 +11,12 @@ var cursors;
 
 var server_time;
 var client_time;
-var server_updates = [];            // log of server updates for interpolation
-const net_offset = 2000;            // ms behind server that we update data from the server
-const buffer_size = 50;              // seconds of server_updates to keep cached
-const desired_server_fps = 60;   // desired server update rate, may vary and be much lower
-this.target_time = 0.01;            // the time where we want to be in the server timeline
+var server_updates = [];  // log of server updates for interpolation
+const net_offset = 200;  // ms behind server that we update data from the server
+const buffer_size = 50; // seconds of server_updates to keep cached
+const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
+var target_time = 0.01; // the time where we want to be in the server timeline
+var client_smooth = 1;  //amount of smoothing to apply to client update dest
 
 var pingsDC = [];
 var pingsWS = [];
@@ -94,6 +95,7 @@ function updateDCPing(delta) {
 // Update from server
 //
 function updatePlayers(serverUpdate) {
+
   // store the server time of this update, it's offset by latency in the network
   //console.log(serverUpdate.time);
   server_time = serverUpdate.time; 
@@ -152,7 +154,7 @@ function updatePlayers(serverUpdate) {
         players.forEach(function(player) {
           if (sPlayer.id == player.id) {
             // save the serverPlayer we just found
-            //var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
+            // var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
             // We found a player on the server that already exists on the server
             // we need to update its position
 
@@ -178,19 +180,73 @@ function updatePlayers(serverUpdate) {
 
 
             //
-            // Smoothing
+            // interpolation
             //
             var ghost_pos = v_lerp(past_pos, target_pos, time_point);
-            var ghost_angle = lerp(past_angle, target_angle, time_point);
-            console.log(ghost_pos);
-            player.sprite.x = ghost_pos.x;
-            player.sprite.y = ghost_pos.y;
-            player.sprite.angle = ghost_angle;
+
+            //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
+            var ghost_angle = angle_lerp(past_angle, target_angle, time_point).toFixed(3);
+            //console.log('ghost_angle:' + ghost_angle);
+
+            var smooth_pos;
+            var smooth_angle;
+
+      
+            var tween_speed = 1 - (client_dpt  / 1000);
+            var tween_speed_bound = (Math.max(0, Math.min(1,tween_speed))).toFixed(3);
+            //console.log('client_dpt:' + client_dpt);
+            //console.log('tween_speed_bound:' + tween_speed_bound);
+
+
+            //console.log('client_dpt:' + client_dpt);
+            var current_pos = { x:player.sprite.world.x, y:player.sprite.world.y };
+            //console.log(current_pos);
+            smooth_pos = v_lerp(current_pos, ghost_pos, tween_speed_bound);
+            //console.log(player.sprite.angle+=0);
+
+            // update player position with interpolation and smoothing
+            player.sprite.x = smooth_pos.x;
+            player.sprite.y = smooth_pos.y;
+
+            // update the player angle
+            // smooth_angle = lerp(player.sprite.angle, ghost_angle, (client_dpt/1000) * client_smooth);
+
+            if (target_angle !== undefined) {
+              //console.log('player.sprite.angle:' + player.sprite.angle);
+              //var test_smooth_angle = angle_lerp(player.sprite.angle, ghost_angle, (client_dpt/1000) * client_smooth);
+              var test_smooth_angle = angle_lerp(player.sprite.angle, ghost_angle, tween_speed_bound);
+
+              player.sprite.angle = ghost_angle;
+              
+              /*
+              if (test_smooth_angle !== undefined && !isNaN(test_smooth_angle)) {
+                //console.log('test_smooth_angle:' + test_smooth_angle);
+
+                // ignore angle adjustments less than 3.5 to avoid fighting the physics engine in a loop
+                //if (Math.abs(player.sprite.angle - target_angle) > 1) {
+                //  player.sprite.angle = test_smooth_angle;
+                //  console.log(test_smooth_angle);
+                //}
+              }
+              else {
+                console.log('ghost_angle:' + ghost_angle);
+                player.sprite.angle = ghost_angle;
+              }
+              */
+            }
+            
+
+
+
+            // update player position and angle with interpolation but no smoothing
+            //player.sprite.x = ghost_pos.x;
+            //player.sprite.y = ghost_pos.y;
+            //player.sprite.angle = ghost_angle;
 
             // console.log('updating player position based on raw data');
-            // update player position with raw data from the server
+            // update player position with raw data from the server, no interpolation or smoothing
             //player.sprite.x = sPlayer.x;
-           // player.sprite.y = sPlayer.y;
+            //player.sprite.y = sPlayer.y;
             //player.sprite.angle = sPlayer.angle;
             
 
@@ -207,17 +263,51 @@ function updatePlayers(serverUpdate) {
   }
 }
 
+// linear interpolate
 function lerp(p, n, t) {
   var _t = Number(t); 
   _t = (Math.max(0, Math.min(1, _t))).toFixed(3); 
-  return (p + _t * (n - p)).toFixed(3);
+  //console.log(_t);
+  //console.log (p + '+' + _t + '* (' + n + '-' + p + ')))');
+  var result = (p + _t * (n - p));
+    //console.log((p + _t * (n - p)));
+  if (isNaN(result))
+    return 0;
+  else
+    return (p + _t * (n - p));
 }
 
+// Vector linear interpolate
 function v_lerp(v, tv, t) { 
   //console.log('calculating v_lerp');
   return { x: this.lerp(v.x, tv.x, t), 
                y: this.lerp(v.y, tv.y, t) }; 
 };
+
+/*
+2D Angle Interpolation (shortest distance)
+Parameters:
+a0 = start angle
+a1 = end angle
+t = interpolation factor (0.0=start, 1.0=end)
+*/
+
+function short_angle_dist(a0,a1) {
+  var max = Math.PI*2;
+  var da = (a1 - a0) % max;
+  return 2*da % max - da;
+}
+
+function angle_lerp(a0,a1,t) {
+  var _t = Number(t); 
+  //_t = (Math.max(0, Math.min(1, _t))).toFixed(3); 
+  var result = (a1 + short_angle_dist(a0,a1)*_t);
+  if (isNaN(result)) 
+    return 0;
+  else 
+    return Number(result);
+}
+
 
 function addNewPlayer(id, x, y) {
   var sprite = addPlayerSprite();

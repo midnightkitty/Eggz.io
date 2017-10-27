@@ -1,4 +1,6 @@
 // code shared by the server and client
+var client_lpt; // time of the last client physics update
+var client_dpt = 16; // delta time between now and the last client physics updates
 
 class Player {
     constructor(sprite, id, socket, x, y) {
@@ -195,9 +197,16 @@ function setupPhaserGame() {
     $(window).resize(function() {
       game.scale.setGameSize(window.innerWidth, window.innerHeight)
     })
-  
+
+    //
+    // Physics update
+    //
     function update() {
         
+        client_dpt = Date.now() - client_lpt;
+        client_lpt = Date.now();
+        // console.log(client_dpt); at 60FPS this is about 16ms
+
         if (cursors.left.isDown) {
             //  Move to the left
             player.body.force.x = (-150 * player_speed);
@@ -222,7 +231,7 @@ function setupPhaserGame() {
                 angle: localPlayer.sprite.angle
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
-            // console.log(JSON.stringify(input_update));
+            //console.log(JSON.stringify(input_update));
             msg.client_sendDC('i', JSON.stringify(input_update));
         }
         else if (msg) {
@@ -237,6 +246,9 @@ function setupPhaserGame() {
             // console.log(JSON.stringify(input_update));
             msg.client_sendDC('i', JSON.stringify(input_update));
         }
+
+
+
     }
 }
 

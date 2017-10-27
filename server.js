@@ -10,7 +10,9 @@ var Messenger = require('./www/js/core.js').Messenger;
 var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
-const server_fps = 45; // server update frequency in updates / second
+const server_fps = 45; // server update frequency in updates / seconds
+
+var delta; // time in ms between now and the last physics update
 
 // webrtc aliases
 var RTCPeerConnection      = webrtc.RTCPeerConnection;
@@ -326,7 +328,7 @@ function gameLoop() {
 
   actualTicks++;
   if (previousTick + tickLengthMs <= now) {
-    var delta = (now - previousTick) / 1000;
+    delta = (now - previousTick) / 1000;
     previousTick = now;
 
     update(delta);
