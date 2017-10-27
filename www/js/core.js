@@ -1,6 +1,7 @@
 // code shared by the server and client
 var client_lpt; // time of the last client physics update
 var client_dpt = 16; // delta time between now and the last client physics updates
+var max_velocity = 250;
 
 class Player {
     constructor(sprite, id, socket, x, y) {
@@ -209,17 +210,30 @@ function setupPhaserGame() {
 
         if (cursors.left.isDown) {
             //  Move to the left
-            player.body.force.x = (-150 * player_speed);
+            if (Math.abs(player.body.velocity.x) < max_velocity)
+                player.body.force.x = (-150 * player_speed);
         }
         else if (cursors.right.isDown) {
           //  Move to the right
-          player.body.force.x = (150 * player_speed);
+          if (Math.abs(player.body.velocity.x) < max_velocity)
+            player.body.force.x = (150 * player_speed);
         }
+       // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
         
         //  Allow the player to jump if they are touching the ground.
         if (cursors.up.isDown && player.body.onGround) {
           player.body.velocity.y = -350;
         }
+
+        // limit max vertical velocity up
+        if (player.body.velocity.y < -500)
+            player.body.velocity.y = -500;
+
+        // limit max vertical velocity down
+        if (player.body.velocity.y > 500)
+            player.body.velocity.y = 500;
+        
+        
   
         if (keyInputStr && msg) {
 
