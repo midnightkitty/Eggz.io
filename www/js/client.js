@@ -12,7 +12,7 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 200;  // ms behind server that we update data from the server
+const net_offset = 500;  // ms behind server that we update data from the server
 const buffer_size = 50; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
@@ -131,6 +131,7 @@ function updatePlayers(serverUpdate) {
 
   // If no target is found,  store the last known server position and move there instead
   if(!target) {
+    console.log('failed to find server timeline spot');
     target = server_updates[0];
     previous = server_updates[0];
   }
