@@ -12,7 +12,7 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 300;  // ms behind server that we update data from the server
+const net_offset = 500;  // ms behind server that we update data from the server
 const buffer_size = 50; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
@@ -95,6 +95,8 @@ function updateDCPing(delta) {
 // Update from server
 //
 function updatePlayers(serverUpdate) {
+
+  //console.log('players update');
 
   // store the server time of this update, it's offset by latency in the network
   //console.log(serverUpdate.time);
@@ -255,6 +257,7 @@ function updatePlayers(serverUpdate) {
           }
         });
 
+        // Add new players
         if (!player_found) {
           console.log('adding player');
           addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y)
@@ -262,6 +265,36 @@ function updatePlayers(serverUpdate) {
       }
     });
   }
+
+  removeMissingPlayers(serverUpdate);
+}
+
+//
+// Remove players on the client no longer found on the server
+//
+function removeMissingPlayers(serverUpdate) {
+
+  players.forEach(function(client_player) {
+
+    var found = false;
+    // look for each user in the server update
+    serverUpdate.player_update.forEach(function(sPlayer) {
+      if (client_player.id == sPlayer.id) {
+        found = true;
+      }
+    });
+
+    // If we couldn't find the local player on the server update list
+    // they must have dropped from the game, remove their player locally
+    if (!found) {
+      console.log('removing dropped other player');
+      var index = players.indexOf(client_player);
+      // remove the sprite from the phaser world
+      players[index].sprite.destroy();
+      // remove the player from the players list
+      players.splice(index,1)
+    }
+  });
 }
 
 // linear interpolate
@@ -338,15 +371,19 @@ function pageSetup() {
   /*
   $('#user-id').focus();
   
-      setTimeout(function() {
-          $('#login').fadeIn(3000);
-          $('#user-id').focus();
-      }, 1000);
-  
-      $('#login-button').click(function () {
-          login();
-      });
-      */
+  setTimeout(function() {
+      $('#login').fadeIn(3000);
+      $('#user-id').focus();
+  }, 1000);
+
+  $('#login-button').click(function() {
+      login();
+  });
+  */
+
+  $('#refresh-button').click(function() {
+    location.reload();
+  });
 }
 
 

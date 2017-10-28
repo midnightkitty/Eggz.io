@@ -90,6 +90,8 @@ function setupPhaserGame() {
       game.load.spritesheet('dude', 'assets/dude.png', 32, 48);    
       game.load.image('egg', 'assets/egg128.png');
       game.load.image('tetrisblock1', 'assets/tetrisblock1.png');
+      game.load.image('nest', 'assets/nest.png');
+      game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
       game.load.physics('physicsData', 'assets/sprites.json');
       game.load.physics('eggPhysicsData', 'assets/egg_physics128.json');
     }
@@ -115,7 +117,7 @@ function setupPhaserGame() {
       gr.body.setMaterial(ledgeMaterial);
       tileLedges.add(gr);
   
-      var ts = new Phaser.TileSprite(game,600,world_y-400,537,50,'repeating-tile');
+      var ts = new Phaser.TileSprite(game,1500,world_y-400,537,50,'repeating-tile');
       //game.physics.arcade.enable(ts);
       game.physics.p2.enable(ts);
       //ts.body.immovable = true;
@@ -124,7 +126,7 @@ function setupPhaserGame() {
       ts.body.setMaterial(ledgeMaterial);
       tileLedges.add(ts);
   
-      var ts2 = new Phaser.TileSprite(game,1500,world_y-600,1000,50,'repeating-tile');
+      var ts2 = new Phaser.TileSprite(game,2500,world_y-600,1000,50,'repeating-tile');
       //game.physics.arcade.enable(ts);
       game.physics.p2.enable(ts2);
       //ts.body.immovable = true;
@@ -133,12 +135,15 @@ function setupPhaserGame() {
       ts2.body.setMaterial(ledgeMaterial);
       tileLedges.add(ts2);
   
-      var tetris1 = game.add.sprite(600,4500, 'tetrisblock1');
-      game.physics.p2.enable(tetris1, false);
+      var nest = new Phaser.Sprite(game, 400,4500, 'nest');
+      game.physics.p2.enable(nest, false);
+      nest.body.static = true;
+      game.world.add(nest);
       // game.physics.arcade.enable(tetris1);
-      tetris1.body.clearShapes();
-      tetris1.body.loadPolygon('physicsData', 'tetrisblock1');    
-  
+      nest.body.clearShapes();
+      nest.body.loadPolygon('nestPhysicsData', 'nest');    
+      nest.body.label = 'ground';
+    
       var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
       var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    
       game.physics.p2.setWorldMaterial(ledgeMaterial, true, true, true, true);
@@ -149,7 +154,7 @@ function setupPhaserGame() {
       contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
       contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
   
-      player = game.add.sprite(200, world_y-1000, 'egg');
+      player = game.add.sprite(400, world_y-1500, 'egg');
       game.physics.p2.enable(player, false);
       player.body.clearShapes();
       player.body.loadPolygon('eggPhysicsData', 'egg128');
@@ -267,11 +272,12 @@ function setupPhaserGame() {
 }
 
 function addPlayerSprite() {
-    var newPlayerSprite = game.add.sprite(getRandomInt(0,800), world_y-600, 'egg');
+    var newPlayerSprite = game.add.sprite(getRandomInt(0,500), world_y-1500, 'egg');
     newPlayerSprite.anchor.setTo(0.5, 0.5);
-    //game.physics.p2.enable(newPlayerSprite, false);
+    // game.physics.p2.enable(newPlayerSprite, false);
     //newPlayerSprite.body.clearShapes();
     //newPlayerSprite.body.loadPolygon('eggPhysicsData', 'egg128');
+    //newPlayerSprite.body.immovable = true;
     return newPlayerSprite;
 }
 
