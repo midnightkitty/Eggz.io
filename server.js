@@ -1,3 +1,4 @@
+var config = require('./www/js/config.js');
 var express = require('express');
 var app = express();
 var port = 3000; // forwarded from port 80 on nginx 

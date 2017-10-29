@@ -1,3 +1,5 @@
+var config = new Config();
+
 var socket; // WebSocket
 var dc2;    // RTC DataChannel
 var pc2;    // RTC Peer Connection
@@ -36,7 +38,9 @@ var tileLedge;
 
 $(document).ready(function() {
   setupSocketIO();
-  setupWebRTC();
+  if (config.wrtc) {
+    setupWebRTC();
+  }
   setupPhaserGame();
   keyboardSetup();
   pageSetup();
@@ -133,7 +137,7 @@ function updatePlayers(serverUpdate) {
 
   // If no target is found,  store the last known server position and move there instead
   if(!target) {
-    console.log('failed to find server timeline spot');
+    // console.log('failed to find server timeline spot');
     target = server_updates[0];
     previous = server_updates[0];
   }
@@ -445,11 +449,17 @@ function makeInputStr() {
 // Socket.io
 //
 function setupSocketIO() {
-  socket = io();
+  socket =  io({
+    reconnection: false
+  });
 
   socket.on('connect', function(data){
       console.log('connected to server web socket');
       // socket.emit('msg','client browser: sup server?');
+  });
+
+  socket.on('disconnect', function() {
+    $('#disconnect-notice').show();
   });
 
   socket.on('msg', function(data) {
