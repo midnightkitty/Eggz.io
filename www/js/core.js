@@ -91,6 +91,8 @@ function setupPhaserGame() {
       game.load.image('egg', 'assets/egg128.png');
       game.load.image('tetrisblock1', 'assets/tetrisblock1.png');
       game.load.image('nest', 'assets/nest.png');
+      game.load.image('pillow', 'assets/pillow.png');      
+      game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
       game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
       game.load.physics('physicsData', 'assets/sprites.json');
       game.load.physics('eggPhysicsData', 'assets/egg_physics128.json');
@@ -135,7 +137,7 @@ function setupPhaserGame() {
       ts2.body.setMaterial(ledgeMaterial);
       tileLedges.add(ts2);
   
-      var nest = new Phaser.Sprite(game, 400,4500, 'nest');
+      var nest = new Phaser.Sprite(game, 400,1500, 'nest');
       game.physics.p2.enable(nest, false);
       nest.body.static = true;
       game.world.add(nest);
@@ -143,6 +145,14 @@ function setupPhaserGame() {
       nest.body.clearShapes();
       nest.body.loadPolygon('nestPhysicsData', 'nest');    
       nest.body.label = 'ground';
+
+      var pillow = new Phaser.Sprite(game, 485,4615, 'pillow');
+      game.physics.p2.enable(pillow, false);
+      pillow.body.static = true;
+      game.world.add(pillow);
+      pillow.body.clearShapes();
+      pillow.body.loadPolygon('pillowPhysicsData', 'pillow');    
+      pillow.body.label = 'ground';
     
       var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
       var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    

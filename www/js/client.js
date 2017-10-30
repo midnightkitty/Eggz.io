@@ -469,7 +469,7 @@ function setupSocketIO() {
 
   socket.on('data', function(data) {
     //console.log(data);
-    msg.handleWSMessage(data);
+    handleWSMessage(data);
   });
 
   socket.on('wrtc_offer', function(data) {
@@ -491,6 +491,46 @@ function setupSocketIO() {
     //console.log('connected clients: ' + data);
   });
 }
+
+function handleWSMessage(data) {
+  var type = data.substring(0,1);
+  var result = data.substring(2,data.length);
+  consumeWSMessage(socket, type, result);
+}
+
+function consumeWSMessage(socket, type, result) {
+  //console.log(result);
+  if (type == 'w') {
+    var r = result.split('.');
+    var id = r[0];
+    var time = r[1];
+    
+    pingsWS.forEach(function(ping) {
+      if (ping.id == id) {
+        var t_sent = parseInt(ping.time);
+        var t_rec = parseInt(Date.now());
+        var delta = t_rec - t_sent;
+        //console.log('WS Ping roundtrip took: ' + delta * 1000+ 's');
+        pingsWS.splice(pingsWS.indexOf(ping), 1);
+        updateWSPing(delta);
+      }
+    });    
+  }
+  else if (type == 'l') {
+    console.log('player list received from server');
+    updateLeaderboard(JSON.parse(result));
+  }
+}
+
+function client_sendWS(type, data) {
+  this.socket.emit('data', type + '-' + data);
+}
+
+function updateWSPing(delta) {
+  // console.log('updateWSPing');
+  $('#ws-ping').html('WS Ping: ' + delta  + 'ms queue[' + pingsWS.length + ']');    
+}
+
 
 //
 // WebRTC Data channel setup
@@ -597,17 +637,18 @@ function setupWebRTC() {
 //
 // DataChannel Ping
 //
-setInterval(function() {
+if (config.wrtc) {
+  setInterval(function() {
+      var id = uuidv1();
+      var t = Date.now();
+      // console.log(id + '.' + t);
 
-  var id = uuidv1();
-  var t = Date.now();
-  // console.log(id + '.' + t);
+      // send Data Channel ping
+      pingsDC.push({ id: id, time: t });
+      msg.client_sendDC('g', id + '.' + t);
 
-  // send Data Channel ping
-  pingsDC.push({ id: id, time: t });
-  msg.client_sendDC('g', id + '.' + t);
-
-}, 2000);
+  }, 2000);
+}
 
 
 //
@@ -617,11 +658,11 @@ setInterval(function() {
   
     var id = uuidv1();
     var t = Date.now();
-    // console.log(id + '.' + t);
+    //console.log(id + '.' + t);
   
     // send Data Channel ping
     pingsWS.push({ id: id, time: t });
-    msg.client_sendWS('w', id + '.' + t);
+    client_sendWS('w', id + '.' + t);
   
-  }, 2000);
+  }, 1000);
   

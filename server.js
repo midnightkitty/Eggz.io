@@ -51,8 +51,10 @@ io.on('connection', function(socket) {
 
   // making new peer connection
   // console.log('making new peer connection');
-  socket.pc = new PeerConnection(socket.id);
-  socket.pc.openNewDataChannel();
+  if (config.wrtc) {
+    socket.pc = new PeerConnection(socket.id);
+    socket.pc.openNewDataChannel();
+  }
 
   socket.on('disconnect', function(){
       console.log('user disconnected');
@@ -115,7 +117,7 @@ function handleClientWSMessage(socket, data) {
 }
 
 function consumeWSMessage(socket, type, result) {
-  //console.log(result);
+  // console.log(result);
   if (type == 'w') {
     var r = result.split('.');
     var id = r[0];
@@ -305,9 +307,14 @@ setInterval(function() {
     //io.emit('data','l-' + JSON.stringify(player_list));
 
     // send player list to all players
-    players.forEach(function(player)  {
-      player.socket.pc.send('l-' + JSON.stringify(player_list));
-    });
+    if (config.wrtc) {
+      players.forEach(function(player)  {
+        player.socket.pc.send('l-' + JSON.stringify(player_list));
+      });
+    }
+    else {
+      io.emit('data','l-' + JSON.stringify(player_list));
+    }
 
   }
 }, 10000);
@@ -372,9 +379,11 @@ function update(delta) {
   //console.log('sending update');
   //console.log(player_update);
 
-  players.forEach(function(player)  {
-    player.socket.pc.send('p-' + JSON.stringify(serverUpdate));
-  });
+  if (config.wrtc) {
+    players.forEach(function(player)  {
+      player.socket.pc.send('p-' + JSON.stringify(serverUpdate));
+    });
+  }
 
 
  // aVerySlowFunction(10);

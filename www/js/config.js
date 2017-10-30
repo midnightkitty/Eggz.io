@@ -3,7 +3,7 @@ class Config {
     
         constructor() {
             // WebRTC mode enabled
-            this.wrtc = true;
+            this.wrtc = false;
         }
     
     }
