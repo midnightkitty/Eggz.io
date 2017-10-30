@@ -37,13 +37,13 @@ var keyInputStr;
 var tileLedge;
 
 $(document).ready(function() {
+  setupPhaserGame();
+  keyboardSetup();
+  pageSetup();
   setupSocketIO();
   if (config.wrtc) {
     setupWebRTC();
   }
-  setupPhaserGame();
-  keyboardSetup();
-  pageSetup();
 });
 
 //
@@ -100,6 +100,8 @@ function updateDCPing(delta) {
 //
 function updatePlayers(serverUpdate) {
 
+  //console.log(localPlayer.id);
+  //console.log(serverUpdate);
   //console.log('players update');
 
   // store the server time of this update, it's offset by latency in the network
@@ -500,6 +502,7 @@ function handleWSMessage(data) {
 
 function consumeWSMessage(socket, type, result) {
   //console.log(result);
+  // Websocket ping latency check from server
   if (type == 'w') {
     var r = result.split('.');
     var id = r[0];
@@ -516,9 +519,17 @@ function consumeWSMessage(socket, type, result) {
       }
     });    
   }
+  // list of other players from server
   else if (type == 'l') {
-    console.log('player list received from server');
+    //console.log('player list received from server');
     updateLeaderboard(JSON.parse(result));
+  }
+  // player positions update from server
+  else if (type == 'p') {
+    //console.log('player positions update received from server');
+    // only update if the local player and world are setup
+    if (localPlayer.id != undefined)
+      updatePlayers(JSON.parse(result));
   }
 }
 

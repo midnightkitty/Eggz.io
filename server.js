@@ -127,6 +127,21 @@ function consumeWSMessage(socket, type, result) {
     //console.log('sending WS ping back to client');
     socket.emit('data', 'w-' + id + '.' + t_rec);
   }
+  else if (type == 'i') {
+    //console.log('client input received');
+    var input = JSON.parse(result);
+
+    // update player position
+    players.forEach(function(player)  {
+      if (player.id == input.id) {
+        player.x = input.x;
+        player.y = input.y;
+        player.angle = input.angle;
+
+        //console.log(player);
+      }
+    });
+  }
 }
 
 
@@ -317,7 +332,7 @@ setInterval(function() {
     }
 
   }
-}, 10000);
+}, 2000);
 
 /**
 Length of a tick in milliseconds. The denominator is your desired framerate.
@@ -383,6 +398,10 @@ function update(delta) {
     players.forEach(function(player)  {
       player.socket.pc.send('p-' + JSON.stringify(serverUpdate));
     });
+  }
+  // update players over web sockets
+  else {
+    io.emit('data', 'p-' + JSON.stringify(serverUpdate));
   }
 
 

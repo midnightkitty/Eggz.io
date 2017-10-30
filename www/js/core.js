@@ -103,93 +103,93 @@ function setupPhaserGame() {
     //    game.time.advancedTiming = true;
     //    game.time.desiredFps = 45;
 
-      game.physics.startSystem(Phaser.Physics.P2JS);
-  
-      var sky = game.add.sprite(0, 0, 'sky');
-      sky.scale.setTo(1.5,1.5);
-  
-      tileLedges = game.add.group();
-  
-      var gr = new Phaser.TileSprite(game,0,world_y-100,10000,300,'repeating-tile');
-      //game.physics.arcade.enable(gr);
-      game.physics.p2.enable(gr);
-      //gr.body.immovable = true;
-      gr.body.label = 'ground';
-      gr.body.static = true;
-      gr.body.setMaterial(ledgeMaterial);
-      tileLedges.add(gr);
-  
-      var ts = new Phaser.TileSprite(game,1500,world_y-400,537,50,'repeating-tile');
-      //game.physics.arcade.enable(ts);
-      game.physics.p2.enable(ts);
-      //ts.body.immovable = true;
-      ts.body.label = 'ground';
-      ts.body.static = true;
-      ts.body.setMaterial(ledgeMaterial);
-      tileLedges.add(ts);
-  
-      var ts2 = new Phaser.TileSprite(game,2500,world_y-600,1000,50,'repeating-tile');
-      //game.physics.arcade.enable(ts);
-      game.physics.p2.enable(ts2);
-      //ts.body.immovable = true;
-      ts2.body.static = true;
-      ts2.body.label = 'ground';
-      ts2.body.setMaterial(ledgeMaterial);
-      tileLedges.add(ts2);
-  
-      var nest = new Phaser.Sprite(game, 400,1500, 'nest');
-      game.physics.p2.enable(nest, false);
-      nest.body.static = true;
-      game.world.add(nest);
-      // game.physics.arcade.enable(tetris1);
-      nest.body.clearShapes();
-      nest.body.loadPolygon('nestPhysicsData', 'nest');    
-      nest.body.label = 'ground';
+        game.physics.startSystem(Phaser.Physics.P2JS);
 
-      var pillow = new Phaser.Sprite(game, 485,4615, 'pillow');
-      game.physics.p2.enable(pillow, false);
-      pillow.body.static = true;
-      game.world.add(pillow);
-      pillow.body.clearShapes();
-      pillow.body.loadPolygon('pillowPhysicsData', 'pillow');    
-      pillow.body.label = 'ground';
-    
-      var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
-      var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    
-      game.physics.p2.setWorldMaterial(ledgeMaterial, true, true, true, true);
-      var contactMaterial = game.physics.p2.createContactMaterial(playerMaterial, ledgeMaterial);
-      contactMaterial.friction = 0.9;     // Friction to use in the contact of these two materials.
-      contactMaterial.restitution = 0.35;  // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
-      contactMaterial.stiffness = 1e20;    // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
-      contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
-      contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
-  
-      player = game.add.sprite(400, world_y-1500, 'egg');
-      game.physics.p2.enable(player, false);
-      player.body.clearShapes();
-      player.body.loadPolygon('eggPhysicsData', 'egg128');
-      player.body.setMaterial(playerMaterial);
-      player.body.onGround = false;
-      player.body.onBeginContact.add(playerHit, this);
-      player.body.onEndContact.add(playerNoHit, this);
-      player.anchor.setTo(0.5, 0.5);
-  
-      game.physics.p2.gravity.y = 300;
-      game.physics.p2.restitution = 0.3;
-  
-      game.world.setBounds(0,0,world_x,world_y);
-      game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-  
-      cursors = game.input.keyboard.createCursorKeys();
-      game.stage.disableVisibilityChange = true;
-      game.time.advancedTiming = true;
-  
-      // add local user to users list
-      localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y);
+        var sky = game.add.sprite(0, 0, 'sky');
+        sky.scale.setTo(1.5,1.5);
 
-      console.log('created local player with id: ' + socket.id);
-  
-      game.time.events.loop(1000, updateStats, this);
+        tileLedges = game.add.group();
+
+        var gr = new Phaser.TileSprite(game,0,world_y-100,10000,300,'repeating-tile');
+        //game.physics.arcade.enable(gr);
+        game.physics.p2.enable(gr);
+        //gr.body.immovable = true;
+        gr.body.label = 'ground';
+        gr.body.static = true;
+        gr.body.setMaterial(ledgeMaterial);
+        tileLedges.add(gr);
+
+        var ts = new Phaser.TileSprite(game,1500,world_y-400,537,50,'repeating-tile');
+        //game.physics.arcade.enable(ts);
+        game.physics.p2.enable(ts);
+        //ts.body.immovable = true;
+        ts.body.label = 'ground';
+        ts.body.static = true;
+        ts.body.setMaterial(ledgeMaterial);
+        tileLedges.add(ts);
+
+        var ts2 = new Phaser.TileSprite(game,2500,world_y-600,1000,50,'repeating-tile');
+        //game.physics.arcade.enable(ts);
+        game.physics.p2.enable(ts2);
+        //ts.body.immovable = true;
+        ts2.body.static = true;
+        ts2.body.label = 'ground';
+        ts2.body.setMaterial(ledgeMaterial);
+        tileLedges.add(ts2);
+
+        var nest = new Phaser.Sprite(game, 400, 500, 'nest');
+        game.physics.p2.enable(nest, false);
+        nest.body.static = true;
+        game.world.add(nest);
+        // game.physics.arcade.enable(tetris1);
+        nest.body.clearShapes();
+        nest.body.loadPolygon('nestPhysicsData', 'nest');    
+        nest.body.label = 'ground';
+
+        var pillow = new Phaser.Sprite(game, 485,4615, 'pillow');
+        game.physics.p2.enable(pillow, false);
+        pillow.body.static = true;
+        game.world.add(pillow);
+        pillow.body.clearShapes();
+        pillow.body.loadPolygon('pillowPhysicsData', 'pillow');    
+        pillow.body.label = 'ground';
+
+        var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
+        var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    
+        game.physics.p2.setWorldMaterial(ledgeMaterial, true, true, true, true);
+        var contactMaterial = game.physics.p2.createContactMaterial(playerMaterial, ledgeMaterial);
+        contactMaterial.friction = 0.9;     // Friction to use in the contact of these two materials.
+        contactMaterial.restitution = 0.35;  // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
+        contactMaterial.stiffness = 1e20;    // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
+        contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
+        contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
+
+        player = game.add.sprite(400, world_y-1500, 'egg');
+        game.physics.p2.enable(player, false);
+        player.body.clearShapes();
+        player.body.loadPolygon('eggPhysicsData', 'egg128');
+        player.body.setMaterial(playerMaterial);
+        player.body.onGround = false;
+        player.body.onBeginContact.add(playerHit, this);
+        player.body.onEndContact.add(playerNoHit, this);
+        player.anchor.setTo(0.5, 0.5);
+
+        game.physics.p2.gravity.y = 300;
+        game.physics.p2.restitution = 0.3;
+
+        game.world.setBounds(0,0,world_x,world_y);
+        game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+
+        cursors = game.input.keyboard.createCursorKeys();
+        game.stage.disableVisibilityChange = true;
+        game.time.advancedTiming = true;
+
+        // add local user to users list
+        localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y);
+
+        console.log('created local player with id: ' + socket.id);
+
+        game.time.events.loop(1000, updateStats, this);
     }
   
     function playerHit(body, bodyB, shapeA, shapeB, equation) {
@@ -250,7 +250,7 @@ function setupPhaserGame() {
         
         
   
-        if (keyInputStr && msg) {
+        if (keyInputStr && localPlayer.id != undefined) {
 
             var input_update = {
                 id: localPlayer.id,
@@ -261,9 +261,15 @@ function setupPhaserGame() {
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             //console.log(JSON.stringify(input_update));
-            msg.client_sendDC('i', JSON.stringify(input_update));
+            if (config.wrtc) {
+                msg.client_sendDC('i', JSON.stringify(input_update));
+            }
+            else {
+                //console.log('sending input update to server');
+                client_sendWS('i', JSON.stringify(input_update));
+            }
         }
-        else if (msg) {
+        else if ( localPlayer.id != undefined) {
             var input_update = {
                 id: localPlayer.id,
                 keys: null,
@@ -273,7 +279,13 @@ function setupPhaserGame() {
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             // console.log(JSON.stringify(input_update));
-            msg.client_sendDC('i', JSON.stringify(input_update));
+            if (config.wrtc) {
+                msg.client_sendDC('i', JSON.stringify(input_update));
+            }
+            else {
+                //console.log('sending input update to server');
+                client_sendWS('i', JSON.stringify(input_update));
+            }
         }
 
 
