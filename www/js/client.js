@@ -14,11 +14,11 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 500;  // ms behind server that we update data from the server
-const buffer_size = 50; // seconds of server_updates to keep cached
+const net_offset = 100;  // ms behind server that we update data from the server
+const buffer_size = 300; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
-var client_smooth = 1;  //amount of smoothing to apply to client update dest
+var client_smooth = 5;  //amount of smoothing to apply to client update dest  -1 disables smoothing. lower number adds more smoothing, useful if the server updates are lower FPS
 
 var pingsDC = [];
 var pingsWS = [];
@@ -42,6 +42,7 @@ $(document).ready(function() {
   pageSetup();
   setupSocketIO();
   if (config.wrtc) {
+    console.log('setting up webrtc');
     setupWebRTC();
   }
 });
@@ -69,7 +70,8 @@ class ClientMessenger extends Messenger {
     else if (type == 'p') {
       // console.log('player posiitons update');
       // console.log(JSON.parse(result));
-      updatePlayers(JSON.parse(result));
+      //updatePlayers(JSON.parse(result));
+      consumePlayerUpdate(JSON.parse(result));
     } // Data Channel ping
     else if (type == 'g') {
       var r = result.split('.');
@@ -95,10 +97,27 @@ function updateDCPing(delta) {
   $('#dc-ping').html('DC Ping: ' + delta + 'ms queue[' + pingsDC.length + ']');
 }
 
+
+function consumePlayerUpdate(serverUpdate) {
+  //console.log('consuming player update from server');
+  // cache the server update
+  server_updates.push(serverUpdate);
+  
+   // console.log('server_updates length:' + server_updates.length);
+    // save a cache of the server updates, but only a couple seconds worth
+    if(server_updates.length > (desired_server_fps * buffer_size)) {
+      server_updates.splice(0,1); // remove the oldest update
+    }
+
+    server_time  = serverUpdate.time;
+}
+
 //
 // Update from server
 //
-function updatePlayers(serverUpdate) {
+function updatePlayers() {
+
+  // console.log('updating players');
 
   //console.log(localPlayer.id);
   //console.log(serverUpdate);
@@ -106,16 +125,19 @@ function updatePlayers(serverUpdate) {
 
   // store the server time of this update, it's offset by latency in the network
   //console.log(serverUpdate.time);
-  server_time = serverUpdate.time; 
   client_time = server_time - net_offset;
 
   // cache the server update
-  server_updates.push(serverUpdate);
+  // server_updates.push(serverUpdate);
 
+  /*
+  console.log('server_updates length:' + server_updates.length);
   // save a cache of the server updates, but only a couple seconds worth
   if(server_updates.length > (desired_server_fps * buffer_size)) {
     server_updates.splice(0,1); // remove the oldest update
+
   }
+  */
   //console.log('server_update_cache_size: ' + server_updates.length);
 
   var current_time = client_time;
@@ -139,9 +161,9 @@ function updatePlayers(serverUpdate) {
 
   // If no target is found,  store the last known server position and move there instead
   if(!target) {
-    // console.log('failed to find server timeline spot');
-    target = server_updates[0];
-    previous = server_updates[0];
+    //console.log('failed to find server timeline spot');
+    target = server_updates[count];
+    previous = server_updates[count];
   }
 
 
@@ -153,11 +175,28 @@ function updatePlayers(serverUpdate) {
     var max_difference = (target.time - previous.time).toFixed(3);
     var time_point = (difference/max_difference).toFixed(3);
 
+   // console.log('difference:' + difference + ', max_difference:' + max_difference + ', time_point:' + time_point)
+
+  /*
+  if( isNaN(time_point) )
+    console.log('time error NaN');
+  if(time_point == -Infinity)
+    console.log('time error -infinity');
+  if(time_point == Infinity)
+    console.log('time error infinity');
+  */
+
+    if( isNaN(time_point) ) time_point = 0;
+    if(time_point == -Infinity) time_point = 0;
+    if(time_point == Infinity) time_point = 0;      
+
+
     // most recent server update
     var latest_server_data = server_updates[server_updates.length-1];
 
-    serverUpdate.player_update.forEach(function(sPlayer) {
+   // serverUpdate.player_update.forEach(function(sPlayer) {
       
+   target.player_update.forEach(function(sPlayer) {
       if (sPlayer.id != localPlayer.id) {
         var player_found = false;
         players.forEach(function(player) {
@@ -169,23 +208,25 @@ function updatePlayers(serverUpdate) {
 
             var target_pos = {};
             var past_pos = {};
-            var target_angle;
-            var past_angle;
+            var target_rotation;
+            var past_rotation;
             
             // find the target position of each enemy player
             target.player_update.forEach(function(tPlayer) {
               if (player.id == tPlayer.id) {
                 target_pos = { x: tPlayer.x, y: tPlayer.y };
-                target_angle = tPlayer.angle; 
+                target_rotation = tPlayer.rotation; 
               }
             });
 
             previous.player_update.forEach(function(pPlayer) {
               if (player.id == pPlayer.id) {
                 past_pos = { x:pPlayer.x, y:pPlayer.y };
-                past_angle = pPlayer.angle;
+                past_rotation = pPlayer.rotation;
               }
             });
+
+            //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
 
 
             //
@@ -193,72 +234,61 @@ function updatePlayers(serverUpdate) {
             //
             var ghost_pos = v_lerp(past_pos, target_pos, time_point);
 
+            //console.log('time_point' + time_point);
             //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
-            var ghost_angle = angle_lerp(past_angle, target_angle, time_point).toFixed(3);
-            //console.log('ghost_angle:' + ghost_angle);
 
-            var smooth_pos;
-            var smooth_angle;
+            ghost_rotation = interpolateAngle(past_rotation, target_rotation, time_point);
+            //console.log('past_rotation:' + past_rotation + ', target_rotation:' + target_rotation + ', ghost_rotation:' + ghost_rotation);
 
-      
-            var tween_speed = 1 - (client_dpt  / 1000);
-            var tween_speed_bound = (Math.max(0, Math.min(1,tween_speed))).toFixed(3);
-            //console.log('client_dpt:' + client_dpt);
-            //console.log('tween_speed_bound:' + tween_speed_bound);
+           // console.log('past_angle:' + past_angle + ', target_angle:' + target_angle + ', ghost_angle:' + ghost_angle);            
 
 
-            //console.log('client_dpt:' + client_dpt);
-            var current_pos = { x:player.sprite.world.x, y:player.sprite.world.y };
-            //console.log(current_pos);
-            smooth_pos = v_lerp(current_pos, ghost_pos, tween_speed_bound);
-            //console.log(player.sprite.angle+=0);
+
 
             // update player position with interpolation and smoothing
-            player.sprite.x = smooth_pos.x;
-            player.sprite.y = smooth_pos.y;
-
-            // update the player angle
-            // smooth_angle = lerp(player.sprite.angle, ghost_angle, (client_dpt/1000) * client_smooth);
-
-            if (target_angle !== undefined) {
-              //console.log('player.sprite.angle:' + player.sprite.angle);
-              //var test_smooth_angle = angle_lerp(player.sprite.angle, ghost_angle, (client_dpt/1000) * client_smooth);
-              var test_smooth_angle = angle_lerp(player.sprite.angle, ghost_angle, tween_speed_bound);
-
-              player.sprite.angle = ghost_angle;
-              
-              /*
-              if (test_smooth_angle !== undefined && !isNaN(test_smooth_angle)) {
-                //console.log('test_smooth_angle:' + test_smooth_angle);
-
-                // ignore angle adjustments less than 3.5 to avoid fighting the physics engine in a loop
-                //if (Math.abs(player.sprite.angle - target_angle) > 1) {
-                //  player.sprite.angle = test_smooth_angle;
-                //  console.log(test_smooth_angle);
-                //}
-              }
-              else {
-                console.log('ghost_angle:' + ghost_angle);
-                player.sprite.angle = ghost_angle;
-              }
-              */
+            if (client_smooth == -1) {
+              player.sprite.x = ghost_pos.x;
+              player.sprite.y = ghost_pos.y;
+              player.sprite.rotation = ghost_rotation;
             }
-            
+
+            // apply client smoothing. If the frame rate from the server is slow, this will interpolate extra frames
+            else {
+
+              var smooth_pos;
+              var smooth_rotation;
+        
+              var tween_speed = (client_dpt  / 1000) * client_smooth;
+              // console.log(tween_speed);
+              var tween_speed_bound = (Math.max(0, Math.min(1,tween_speed))).toFixed(3);
+              var current_pos = { x:player.sprite.world.x, y:player.sprite.world.y };
+
+              // smooth the player position
+              smooth_pos = v_lerp(current_pos, ghost_pos, tween_speed_bound);
+
+              // smooth the player angle
+              smooth_rotation = interpolateAngle(player.sprite.rotation, ghost_rotation, tween_speed_bound);
+              // console.log('player.sprite.rotation: '  +player.sprite.rotation + ', ghost_rotation:' + ghost_rotation + ', smooth_rotation:' + smooth_rotation);
 
 
+              // update player position and angle
+              player.sprite.x = smooth_pos.x;
+              player.sprite.y = smooth_pos.y;
 
-            // update player position and angle with interpolation but no smoothing
-            //player.sprite.x = ghost_pos.x;
-            //player.sprite.y = ghost_pos.y;
-            //player.sprite.angle = ghost_angle;
 
-            // console.log('updating player position based on raw data');
-            // update player position with raw data from the server, no interpolation or smoothing
-            //player.sprite.x = sPlayer.x;
-            //player.sprite.y = sPlayer.y;
-            //player.sprite.angle = sPlayer.angle;
-            
-
+              if (smooth_rotation != undefined) {
+                //console.log('using smooth angle for smoothing');
+                player.sprite.rotation = smooth_rotation;
+                player.rotation = smooth_rotation;
+              }
+              // the egg starts at 0/undefined, this will catch the first movement when
+              // the tween would fail
+              else {
+               // console.log('using ghost angle for smoothing');
+                player.sprite.rotation = ghost_rotation;
+                player.rotation = ghost_rotation;
+              }
+            }
             player_found = true;
           }
         });
@@ -266,13 +296,13 @@ function updatePlayers(serverUpdate) {
         // Add new players
         if (!player_found) {
           console.log('adding player');
-          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y)
+          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation);
         }
       }
     });
   }
 
-  removeMissingPlayers(serverUpdate);
+  removeMissingPlayers(target);
 }
 
 //
@@ -341,17 +371,58 @@ function short_angle_dist(a0,a1) {
 function angle_lerp(a0,a1,t) {
   var _t = Number(t); 
   //_t = (Math.max(0, Math.min(1, _t))).toFixed(3); 
-  var result = (a1 + short_angle_dist(a0,a1)*_t);
-  if (isNaN(result)) 
+  var result = (a0 + short_angle_dist(a0,a1)*_t);
+  if (isNaN(result)) {
     return 0;
-  else 
+  }
+  else { 
     return Number(result);
+  }
+}
+
+function interpolateAngle(fromAngle, toAngle, t) {
+
+  var PI = Math.PI;
+  var TWO_PI = Math.PI * 2;
+
+
+  fromAngle = (fromAngle + TWO_PI) % TWO_PI;
+  toAngle = (toAngle + TWO_PI) % TWO_PI;
+
+  var diff = Math.abs(fromAngle - toAngle);
+  if (diff < PI) {
+      return lerp(fromAngle, toAngle, t);
+  }
+  else {
+      if (fromAngle > toAngle) {
+          fromAngle = fromAngle - TWO_PI;
+          return lerp(fromAngle, toAngle, t);
+          return from;
+      }
+      else if (toAngle > fromAngle) {
+          toAngle = toAngle - TWO_PI;
+          return lerp(fromAngle, toAngle, t);
+          return from;
+      }
+  }
+}
+
+function degrees_to_radians(degrees)
+{
+  var pi = Math.PI;
+  return degrees * (pi/180);
+}
+
+function radians_to_degrees(radians)
+{
+  var pi = Math.PI;
+  return radians * (180/pi);
 }
 
 
-function addNewPlayer(id, x, y) {
+function addNewPlayer(id, x, y, rotation) {
   var sprite = addPlayerSprite();
-  var newPlayer = new Player(sprite, id, null, x, y);
+  var newPlayer = new Player(sprite, id, null, x, y, rotation);
   players.push(newPlayer);
 }
 
@@ -475,7 +546,7 @@ function setupSocketIO() {
   });
 
   socket.on('wrtc_offer', function(data) {
-      // console.log('wrtc offer received from Server yah!');
+      console.log('wrtc offer received from Server yah!');
       // console.log(data);
       desc = JSON.parse(data);
       set_pc2_remote_description(desc);
@@ -529,7 +600,8 @@ function consumeWSMessage(socket, type, result) {
     //console.log('player positions update received from server');
     // only update if the local player and world are setup
     if (localPlayer.id != undefined)
-      updatePlayers(JSON.parse(result));
+      // updatePlayers(JSON.parse(result));
+      consumePlayerUpdate(JSON.parse(result));
   }
 }
 
@@ -585,10 +657,12 @@ function setupWebRTC() {
   }
 
   function create_data_channels() {
+    console.log('create_data_channel called');
     pc2.ondatachannel = function(event) {
       dc2 = event.channel;
       dc2.onopen = function() {
         console.log(" data channel open wither server");
+        dc_open = true;
         dc2.send('creating ClientMessenger');
         msg = new ClientMessenger(socket, dc2);
 
@@ -602,7 +676,7 @@ function setupWebRTC() {
   }
 
   function set_pc2_remote_description(desc) {
-   // console.log('pc2: set remote description');
+    console.log('pc2: set remote description');
     pc2.setRemoteDescription(
       new RTCSessionDescription(desc),
       create_answer,
@@ -611,7 +685,7 @@ function setupWebRTC() {
   }
 
   function create_answer() {
-   // console.log('pc2: create answer');
+    console.log('pc2: create answer');
     pc2.createAnswer(
       set_pc2_local_description,
       handle_error
@@ -619,7 +693,7 @@ function setupWebRTC() {
   }
 
   function set_pc2_local_description(desc) {
-    // console.log('pc2: set local description');
+    console.log('pc2: set local description');
     // console.log(JSON.stringify(desc));
 
     pc2.setLocalDescription(
@@ -648,19 +722,20 @@ function setupWebRTC() {
 //
 // DataChannel Ping
 //
+
 if (config.wrtc) {
   setInterval(function() {
-      var id = uuidv1();
-      var t = Date.now();
-      // console.log(id + '.' + t);
+      if (dc_open) { 
+        var id = uuidv1();
+        var t = Date.now();
+        // console.log(id + '.' + t);
 
-      // send Data Channel ping
-      pingsDC.push({ id: id, time: t });
-      msg.client_sendDC('g', id + '.' + t);
-
-  }, 2000);
+        // send Data Channel ping
+        pingsDC.push({ id: id, time: t });
+        msg.client_sendDC('g', id + '.' + t);
+      }
+  }, 1000);
 }
-
 
 //
 // WebSocket Ping

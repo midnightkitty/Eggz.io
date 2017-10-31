@@ -3,14 +3,16 @@ var client_lpt; // time of the last client physics update
 var client_dpt = 16; // delta time between now and the last client physics updates
 var max_velocity = 250;
 
+var dc_open = false; // is the data channel open?
+
 class Player {
-    constructor(sprite, id, socket, x, y) {
+    constructor(sprite, id, socket, x, y, rotation) {
         this.sprite = sprite;
         this.id = id;    
         this.socket = socket;
         this.x = x;
         this.y = y;
-        this.angle;
+        this.rotation = rotation;
     }
 }
 
@@ -185,7 +187,7 @@ function setupPhaserGame() {
         game.time.advancedTiming = true;
 
         // add local user to users list
-        localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y);
+        localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y, 0);
 
         console.log('created local player with id: ' + socket.id);
 
@@ -247,8 +249,6 @@ function setupPhaserGame() {
         // limit max vertical velocity down
         if (player.body.velocity.y > 500)
             player.body.velocity.y = 500;
-        
-        
   
         if (keyInputStr && localPlayer.id != undefined) {
 
@@ -257,7 +257,7 @@ function setupPhaserGame() {
                 keys: keyInputStr,
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
-                angle: localPlayer.sprite.angle
+                rotation: localPlayer.sprite.rotation
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             //console.log(JSON.stringify(input_update));
@@ -275,11 +275,11 @@ function setupPhaserGame() {
                 keys: null,
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
-                angle: localPlayer.sprite.angle
+                rotation: localPlayer.sprite.rotation
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             // console.log(JSON.stringify(input_update));
-            if (config.wrtc) {
+            if (config.wrtc && dc_open) {
                 msg.client_sendDC('i', JSON.stringify(input_update));
             }
             else {
@@ -288,7 +288,7 @@ function setupPhaserGame() {
             }
         }
 
-
+        updatePlayers();
 
     }
 }

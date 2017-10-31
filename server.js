@@ -1,4 +1,5 @@
-var config = require('./www/js/config.js');
+var Config = require('./www/js/config.js').Config;
+const config = new Config();
 var express = require('express');
 var app = express();
 var port = 3000; // forwarded from port 80 on nginx 
@@ -11,7 +12,7 @@ var Messenger = require('./www/js/core.js').Messenger;
 var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
-const server_fps = 45; // server update frequency in updates / seconds
+const server_fps = 20; // server update frequency in updates / seconds
 
 var delta; // time in ms between now and the last physics update
 
@@ -50,8 +51,9 @@ io.on('connection', function(socket) {
   //clients.push(socket);
 
   // making new peer connection
-  // console.log('making new peer connection');
+
   if (config.wrtc) {
+    console.log('making new peer connection');
     socket.pc = new PeerConnection(socket.id);
     socket.pc.openNewDataChannel();
   }
@@ -136,7 +138,7 @@ function consumeWSMessage(socket, type, result) {
       if (player.id == input.id) {
         player.x = input.x;
         player.y = input.y;
-        player.angle = input.angle;
+        player.rotation = input.rotation;
 
         //console.log(player);
       }
@@ -162,7 +164,7 @@ function consumeDCMessage(dc1, type, result) {
       if (player.id == input.id) {
         player.x = input.x;
         player.y = input.y;
-        player.angle = input.angle;
+        player.rotation = input.rotation;
 
         //console.log(player);
       }
@@ -236,7 +238,7 @@ class PeerConnection {
   }
   
   create_data_channels(socketid) {
-    // console.log('calling createDataChannel');
+    console.log('calling createDataChannel');
 
     this.dc1 = this.pc1.createDataChannel(socketid, { reliable: false,
                                                                             ordered: false,
@@ -262,7 +264,7 @@ class PeerConnection {
   }
   
   create_offer() {
-    // console.log('pc1: create offer');
+     console.log('pc1: create offer');
     var obj = this;
     this.pc1.createOffer((obj.set_pc1_local_description).bind(this), this.handle_error);
   }
@@ -388,7 +390,7 @@ function update(delta) {
     p.id = player.id;
     p.x = player.x;
     p.y = player.y;
-    p.angle = player.angle;
+    p.rotation = player.rotation;
     serverUpdate.player_update.push(p);
   });
   //console.log('sending update');
