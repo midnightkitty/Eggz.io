@@ -276,21 +276,32 @@ function updatePlayers() {
               player.sprite.y = smooth_pos.y;
 
 
-              if (smooth_rotation != undefined) {
-                //console.log('using smooth angle for smoothing');
-                player.sprite.rotation = smooth_rotation;
-                player.rotation = smooth_rotation;
+              // use these to turn off smoothing
+              // set server FPS to 5 or lower to see extreme lag results
+              if (client_smooth == -1) {
+              player.sprite.x = ghost_pos.x;
+              player.sprite.y = ghost_pos.y;
+              player.sprite.rotation = ghost_rotation;
               }
-              // the egg starts at 0/undefined, this will catch the first movement when
-              // the tween would fail
               else {
-               // console.log('using ghost angle for smoothing');
-                player.sprite.rotation = ghost_rotation;
-                player.rotation = ghost_rotation;
+                if (smooth_rotation != undefined) {
+                  //console.log('using smooth angle for smoothing');
+                  player.sprite.rotation = smooth_rotation;
+                  player.rotation = smooth_rotation;
+                }
+                // the egg starts at 0/undefined, this will catch the first movement when
+                // the tween would fail
+                else {
+                // console.log('using ghost angle for smoothing');
+                  player.sprite.rotation = ghost_rotation;
+                  player.rotation = ghost_rotation;
+                }
               }
             }
+            
             player_found = true;
           }
+          
         });
 
         // Add new players
