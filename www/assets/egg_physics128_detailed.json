@@ -1,0 +1,51 @@
+{ 
+    
+    "egg128": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   65, 8  ,  81, 14  ,  90, 23  ,  97, 31  ,  33, 31  ,  40, 21  ,  49, 12  ,  57, 8  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   81, 14  ,  65, 8  ,  73, 9  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   96, 108  ,  89, 114  ,  18, 83  ,  18, 76  ,  111, 75  ,  110, 84  ,  102, 102  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   36, 112  ,  29, 105  ,  24, 99  ,  18, 83  ,  89, 114  ,  74, 120  ,  61, 120  ,  47, 118  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   74, 120  ,  89, 114  ,  83, 118  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   18, 83  ,  24, 99  ,  20, 92  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   102, 41  ,  106, 51  ,  110, 67  ,  21, 56  ,  28, 40  ,  33, 31  ,  97, 31  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   110, 67  ,  106, 51  ,  109, 59  ]
+        } ,
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   21, 56  ,  110, 67  ,  111, 75  ,  18, 76  ,  18, 68  ]
+        }
+    ]
+}
