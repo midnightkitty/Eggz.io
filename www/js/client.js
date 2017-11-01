@@ -6,7 +6,6 @@ var pc2;    // RTC Peer Connection
 var msg;
 var menuOpen = true;
 var chatOpen = false;
-var gameFocus = false;
 
 // Phaser
 var game;
@@ -122,9 +121,6 @@ function consumePlayerUpdate(serverUpdate) {
 // Update from server
 //
 function updatePlayers() {
-
-  // console.log('updating players');
-
   //console.log(localPlayer.id);
   //console.log(serverUpdate);
   //console.log('players update');
@@ -132,19 +128,6 @@ function updatePlayers() {
   // store the server time of this update, it's offset by latency in the network
   //console.log(serverUpdate.time);
   client_time = server_time - net_offset;
-
-  // cache the server update
-  // server_updates.push(serverUpdate);
-
-  /*
-  console.log('server_updates length:' + server_updates.length);
-  // save a cache of the server updates, but only a couple seconds worth
-  if(server_updates.length > (desired_server_fps * buffer_size)) {
-    server_updates.splice(0,1); // remove the oldest update
-
-  }
-  */
-  //console.log('server_update_cache_size: ' + server_updates.length);
 
   var current_time = client_time;
   var count = server_updates.length - 1;
@@ -246,7 +229,6 @@ function updatePlayers() {
 
             //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
 
-
             //
             // interpolation
             //
@@ -260,19 +242,14 @@ function updatePlayers() {
 
            // console.log('past_angle:' + past_angle + ', target_angle:' + target_angle + ', ghost_angle:' + ghost_angle);            
 
-
-
-
             // update player position with interpolation and smoothing
             if (client_smooth == -1) {
               player.sprite.x = ghost_pos.x;
               player.sprite.y = ghost_pos.y;
               player.sprite.rotation = ghost_rotation;
             }
-
             // apply client smoothing. If the frame rate from the server is slow, this will interpolate extra frames
             else {
-
               var smooth_pos;
               var smooth_rotation;
         
@@ -316,6 +293,17 @@ function updatePlayers() {
                 }
               }
             }
+
+            // update the players name label location, we have to do this as a separate game
+            // object otherwise it would rotate with the players egg
+                    // update the position of the player's name label
+            player.name_label.setText(player.name);
+            player.name_label.x = player.sprite.x;
+            player.name_label.y  = player.sprite.y + player.sprite.height/2 + 10;
+
+            // updat the players dialog box location
+            player.dialog_box.x = player.sprite.x;
+            player.dialog_box.y  = player.sprite.y - player.sprite.height/2 - 10;            
             
             player_found = true;
           }
@@ -355,6 +343,8 @@ function removeMissingPlayers(serverUpdate) {
       console.log('removing dropped other player');
       var index = players.indexOf(client_player);
       // remove the sprite from the phaser world
+      players[index].dialog_box.destroy();
+      players[index].name_label.destroy();
       players[index].sprite.destroy();
       // remove the player from the players list
       players.splice(index,1)
@@ -452,6 +442,13 @@ function radians_to_degrees(radians)
 function addNewPlayer(id, x, y, rotation, egg_color) {
   var sprite = addPlayerSprite(egg_color);
   var newPlayer = new Player(sprite, id, null, x, y, rotation, egg_color);
+  newPlayer.name_label =  newPlayer.name_label = game.add.text(100, 4500, 'baddy', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+  newPlayer.name_label.anchor.set(0.5);
+  newPlayer.name_label.alpha = 0.5;
+  newPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+  newPlayer.dialog_box.anchor.set(0.5);
+  newPlayer.dialog_box.alpha = 0.5;  
+
   players.push(newPlayer);
 }
 
@@ -492,6 +489,7 @@ function updateLeaderboard(playerList) {
 //
 function pageSetup() {
   $('#user-id').focus();
+  gameFocus = false;
   
   setTimeout(function() {
       $('#login').fadeIn(3000);
@@ -509,7 +507,9 @@ function pageSetup() {
 
 function login() {
   if (localPlayer.name == '' && $('#user-id').text() != '') {
-      localPlayer.name = $('#user-id').text();
+      var name = $('#user-id').text();
+      localPlayer.name = name;
+      localPlayer.name_label.setText(name);
       //localUser.ID = localUser.name + getRandomInt(1,100000);        
       socket.emit('data', 'n-' + localPlayer.id + '.' + localPlayer.name);
       $('#login').fadeOut(1000);
@@ -530,7 +530,6 @@ function keyboardSetup() {
       if (e.keyCode == 13) {
           e.preventDefault();
           login();
-          gameFocus = true;
       }
     }
 
@@ -555,11 +554,15 @@ function keyboardSetup() {
       if (e.keyCode == 13) {
           e.preventDefault();
 
-
           // Send the message
           var msg = $('#msg-input').html();
           socket.emit('data', 'c-' + localPlayer.id + '.' + msg);
           $('#msg-input').html('');
+
+          localPlayer.dialog_box.setText(msg);
+          setTimeout(function() {
+            localPlayer.dialog_box.setText('');
+          }, chat_msg_life);
       }
       if (e.keyCode == 96) {
           $('#msg-input').val('');
@@ -570,25 +573,26 @@ function keyboardSetup() {
     } 
   });
 
+  if (gameFocus) {
 
-  $(document).keydown(function(e) {
-    // console.log('key pressed:' + e.keyCode);
-    keys[e.which] = true;
-    makeInputStr();
-  });
+      $(document).keydown(function(e) {
+        // console.log('key pressed:' + e.keyCode);
+        keys[e.which] = true;
+        makeInputStr();
+      });
 
-  $(document).keyup(function (e) {
-    delete keys[e.which];
-    makeInputStr();
-  });
-}
+      $(document).keyup(function (e) {
+        delete keys[e.which];
+        makeInputStr();
+      });
+    }
+  }
 
 function makeInputStr() {
   var inputs = [];
   
   for (var i in keys) {
    if (!keys.hasOwnProperty(i)) continue;
-
    i = parseInt(i);
 
     switch(i) {
@@ -609,6 +613,7 @@ function makeInputStr() {
         break;
     }
   }
+
   keyInputStr = inputs.join('.');
 }
 
@@ -626,7 +631,9 @@ function setupSocketIO() {
   });
 
   socket.on('disconnect', function() {
+    $('#login').hide(); // hide the login if it's showing
     $('#disconnect-notice').show();
+    gameFocus = false;
   });
 
   socket.on('msg', function(data) {
@@ -711,6 +718,13 @@ function consumeWSMessage(socket, type, result) {
     players.forEach(function(player) {
       if (player.id == id) {
         name = player.name;
+
+        // update the dialog box for the remote user that sent this meessage
+        player.dialog_box.setText(message);        
+
+        setTimeout(function() {
+          player.dialog_box.setText('');
+        }, chat_msg_life);
       }
     });
 
@@ -723,7 +737,8 @@ function consumeWSMessage(socket, type, result) {
         $item.toggle('drop').promise().done(function() {
            $item.remove();
        })
-    }, 4000);
+    }, chat_msg_life);
+
   }
 }
 

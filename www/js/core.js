@@ -2,10 +2,13 @@
 var client_lpt; // time of the last client physics update
 var client_dpt = 16; // delta time between now and the last client physics updates
 var max_velocity = 250;
+var chat_msg_life = 3000; // how long chat messages stay on the screen in miliseconds
 
 var dc_open = false; // is the data channel open?
 
 var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
+
+var gameFocus = false;
 
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
@@ -17,6 +20,8 @@ class Player {
         this.rotation = rotation;
         this.name = '';
         this.egg_color = egg_color;
+        this.name_label = {};
+        this.dialog_box = {};
     }
 }
 
@@ -206,6 +211,22 @@ function setupPhaserGame() {
         console.log('created local player with id: ' + socket.id);
 
         game.time.events.loop(1000, updateStats, this);
+
+        localPlayer.name_label = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+        localPlayer.name_label.alpha = 0.5;
+        localPlayer.name_label.anchor.set(0.5);
+
+        localPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+        localPlayer.dialog_box.alpha = 0.5;
+        localPlayer.dialog_box.anchor.set(0.5);
+
+        // Group text/sprites to the egg (or any sprite)
+        /*
+        text = game.add.text(100, 100, 'baddy', { font: "32px Arial", fill: "#ff0044", wordWrap: true, wordWrapWidth: 300, align: "center", backgroundColor: "#ffff00" });
+        text.anchor.set(0.5);
+        text.rotation = 0;
+        player.addChild(text);
+        */
     }
   
     function playerHit(body, bodyB, shapeA, shapeB, equation) {
@@ -234,36 +255,57 @@ function setupPhaserGame() {
     // Physics update
     //
     function update() {
+
+        // update the position of the player's name label
+        localPlayer.name_label.x = localPlayer.sprite.x;
+        localPlayer.name_label.y  = localPlayer.sprite.y + localPlayer.sprite.height/2 + 10;
+
+        // update the position of the player's dialog box
+        localPlayer.dialog_box.x = localPlayer.sprite.x;
+        localPlayer.dialog_box.y  = localPlayer.sprite.y - localPlayer.sprite.height/2 - 10;
         
+        // keep track of the time and delta time between each physics update
         client_dpt = Date.now() - client_lpt;
         client_lpt = Date.now();
         // console.log(client_dpt); at 60FPS this is about 16ms
 
-        if (cursors.left.isDown) {
-            //  Move to the left
+        // only allow player movement if the game is in focus
+        if (gameFocus) {
+            if (cursors.left.isDown) {
+                //  Move to the left
+                if (Math.abs(player.body.velocity.x) < max_velocity)
+                    player.body.force.x = (-150 * player_speed);
+            }
+            else if (cursors.right.isDown) {
+            //  Move to the right
             if (Math.abs(player.body.velocity.x) < max_velocity)
-                player.body.force.x = (-150 * player_speed);
-        }
-        else if (cursors.right.isDown) {
-          //  Move to the right
-          if (Math.abs(player.body.velocity.x) < max_velocity)
-            player.body.force.x = (150 * player_speed);
-        }
-       // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
-        
-        //  Allow the player to jump if they are touching the ground.
-        if (cursors.up.isDown && player.body.onGround) {
-          player.body.velocity.y = -350;
+                player.body.force.x = (150 * player_speed);
+            }
+        // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
+            
+            //  Allow the player to jump if they are touching the ground.
+            if (cursors.up.isDown && player.body.onGround) {
+            player.body.velocity.y = -350;
+            }
+
+            // limit max vertical velocity up
+            if (player.body.velocity.y < -500)
+                player.body.velocity.y = -500;
+
+            // limit max vertical velocity down
+            if (player.body.velocity.y > 500)
+                player.body.velocity.y = 500;
         }
 
-        // limit max vertical velocity up
-        if (player.body.velocity.y < -500)
-            player.body.velocity.y = -500;
+        // Error key presses should close the chat window if it's open
+        if (chatOpen) {
+            if (cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown) {
+                $('#chatinput').hide();
+                chatOpen = false;
+                gameFocus = true;
+            }
+        }
 
-        // limit max vertical velocity down
-        if (player.body.velocity.y > 500)
-            player.body.velocity.y = 500;
-  
         if (keyInputStr && localPlayer.id != undefined) {
 
             var input_update = {
