@@ -4,6 +4,9 @@ var socket; // WebSocket
 var dc2;    // RTC DataChannel
 var pc2;    // RTC Peer Connection
 var msg;
+var menuOpen = true;
+var chatOpen = false;
+var gameFocus = false;
 
 // Phaser
 var game;
@@ -88,6 +91,9 @@ class ClientMessenger extends Messenger {
           updateDCPing(delta);
         }
       });
+    }
+    else if (type == 'c') {
+      console.log(data);
     } 
   }
 }
@@ -201,6 +207,18 @@ function updatePlayers() {
         var player_found = false;
         players.forEach(function(player) {
           if (sPlayer.id == player.id) {
+            // The server user may have a name assigned now, make sure we have it locally
+            player.name = sPlayer.name;
+
+            // The server user should have an egg color, update it locally
+            if (player.egg_color != sPlayer.egg_color) {
+              console.log('updating player(' + sPlayer.id + ') color: ' + sPlayer.egg_color);
+              player.egg_color = sPlayer.egg_color;
+              player.sprite.loadTexture(sPlayer.egg_color);
+            }
+
+
+
             // save the serverPlayer we just found
             // var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
             // We found a player on the server that already exists on the server
@@ -306,8 +324,8 @@ function updatePlayers() {
 
         // Add new players
         if (!player_found) {
-          console.log('adding player');
-          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation);
+          console.log('adding remote player: color=' + sPlayer.egg_color);
+          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation, sPlayer.egg_color);
         }
       }
     });
@@ -431,9 +449,9 @@ function radians_to_degrees(radians)
 }
 
 
-function addNewPlayer(id, x, y, rotation) {
-  var sprite = addPlayerSprite();
-  var newPlayer = new Player(sprite, id, null, x, y, rotation);
+function addNewPlayer(id, x, y, rotation, egg_color) {
+  var sprite = addPlayerSprite(egg_color);
+  var newPlayer = new Player(sprite, id, null, x, y, rotation, egg_color);
   players.push(newPlayer);
 }
 
@@ -442,6 +460,24 @@ function addNewPlayer(id, x, y, rotation) {
 //
 function updateLeaderboard(playerList) {
   // console.log(playerList.length + ' players online');
+
+  // update local copy of player name
+  playerList.forEach(function(listPlayer) {
+    players.forEach(function(player) { 
+      if(listPlayer.id == player.id) {
+        player.name = listPlayer.name;
+      }
+    });
+  });
+
+  // remove existing player list
+  $(".leaderboard-user").remove();
+
+  playerList.forEach(function(player) {
+    if (player.name) {
+      $('#leaderboard').append('<li class="leaderboard-user">' + player.name +'</li>');
+    }
+  });
 
   if (playerList.length == 1) {
     $('#leaderboard-title').html(playerList.length + ' player online');
@@ -455,8 +491,6 @@ function updateLeaderboard(playerList) {
 //  Page HUD Setup
 //
 function pageSetup() {
-
-  /*
   $('#user-id').focus();
   
   setTimeout(function() {
@@ -467,11 +501,20 @@ function pageSetup() {
   $('#login-button').click(function() {
       login();
   });
-  */
 
   $('#refresh-button').click(function() {
     location.reload();
   });
+}
+
+function login() {
+  if (localPlayer.name == '' && $('#user-id').text() != '') {
+      localPlayer.name = $('#user-id').text();
+      //localUser.ID = localUser.name + getRandomInt(1,100000);        
+      socket.emit('data', 'n-' + localPlayer.id + '.' + localPlayer.name);
+      $('#login').fadeOut(1000);
+      gameFocus = true;
+  }
 }
 
 
@@ -481,10 +524,50 @@ function pageSetup() {
 function keyboardSetup() {
 
   $(document).keypress(function(e) {
-    //console.log(e.keyCode);
-    if (e.keyCode == 48) {
-      addPlayerSprite();
+    console.log(e.keyCode);
+
+    if ($('#user-id').is(':focus')) {
+      if (e.keyCode == 13) {
+          e.preventDefault();
+          login();
+          gameFocus = true;
+      }
     }
+
+    if (gameFocus) {
+      if (e.keyCode == 96) {
+        e.preventDefault();
+        if (!chatOpen) {
+            $('#chatinput').show();
+            $('#msg-input').focus();
+            $('#msg-input').val('');            
+            chatOpen = true;
+            gameFocus = false;
+        }
+        else {
+            $('#chatinput').hide();
+          chatOpen = false;
+          gameFocus = true;
+        }
+      }
+    }
+    else if (chatOpen) {
+      if (e.keyCode == 13) {
+          e.preventDefault();
+
+
+          // Send the message
+          var msg = $('#msg-input').html();
+          socket.emit('data', 'c-' + localPlayer.id + '.' + msg);
+          $('#msg-input').html('');
+      }
+      if (e.keyCode == 96) {
+          $('#msg-input').val('');
+          $('#chatinput').hide();
+          chatOpen = false;
+          gameFocus = true;
+      }
+    } 
   });
 
 
@@ -613,6 +696,34 @@ function consumeWSMessage(socket, type, result) {
     if (localPlayer.id != undefined)
       // updatePlayers(JSON.parse(result));
       consumePlayerUpdate(JSON.parse(result));
+  }
+  else if (type == 'c') {
+    var r = result.split('.');
+    var id = r[0];
+    var message = r[1];
+    // print the received message
+    var name = id;
+
+    if (id == localPlayer.id) {
+      name = localPlayer.name;
+    }
+
+    players.forEach(function(player) {
+      if (player.id == id) {
+        name = player.name;
+      }
+    });
+
+
+    var $item = $('<li>' + name + ':' + message +'</li>');
+    $( '#chat').prepend($item);
+
+    // remove the message after a bit
+    setTimeout(function() {
+        $item.toggle('drop').promise().done(function() {
+           $item.remove();
+       })
+    }, 4000);
   }
 }
 

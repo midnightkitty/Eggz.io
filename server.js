@@ -139,8 +139,29 @@ function consumeWSMessage(socket, type, result) {
         player.x = input.x;
         player.y = input.y;
         player.rotation = input.rotation;
-
+        player.egg_color = input.egg_color;
         //console.log(player);
+      }
+    });
+  }
+  // Relay chat message to all clients
+  else if (type == 'c') {
+    console.log(result);
+    // broadcast the chat message to all sockets
+    io.emit('data','c-' + result);
+  }
+  // Assign user name to socket
+  else if (type == 'n') {
+    var r = result.split('.');
+    var id = r[0];
+    var name = r[1];
+    console.log(result);
+
+    // set the name for this player's socket ID
+    players.forEach(function(player) {
+      if (player.id == id) {
+        player.name = name;
+        console.log('name assigned to:' + player.id);
       }
     });
   }
@@ -165,7 +186,7 @@ function consumeDCMessage(dc1, type, result) {
         player.x = input.x;
         player.y = input.y;
         player.rotation = input.rotation;
-
+        player.egg_color = input.egg_color;
         //console.log(player);
       }
     });
@@ -316,7 +337,8 @@ setInterval(function() {
     players.forEach(function(player) {
 
       player_list.push({
-        player: player.id
+        id: player.id,
+        name: player.name
       });  
     }, this);
     console.log('conected client websockets: ' + JSON.stringify(player_list));
@@ -388,9 +410,11 @@ function update(delta) {
   players.forEach(function(player)  {
     var p = {};
     p.id = player.id;
+    p.name = player.name;
     p.x = player.x;
     p.y = player.y;
     p.rotation = player.rotation;
+    p.egg_color = player.egg_color;
     serverUpdate.player_update.push(p);
   });
   //console.log('sending update');

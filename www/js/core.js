@@ -5,14 +5,18 @@ var max_velocity = 250;
 
 var dc_open = false; // is the data channel open?
 
+var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
+
 class Player {
-    constructor(sprite, id, socket, x, y, rotation) {
+    constructor(sprite, id, socket, x, y, rotation, egg_color) {
         this.sprite = sprite;
         this.id = id;    
         this.socket = socket;
         this.x = x;
         this.y = y;
         this.rotation = rotation;
+        this.name = '';
+        this.egg_color = egg_color;
     }
 }
 
@@ -88,16 +92,21 @@ function setupPhaserGame() {
       game.load.image('ledge', 'assets/ledge-grass.png');
       game.load.image('ledge-tile', 'assets/ledge-tile.png');
       game.load.image('repeating-tile', 'assets/repeating-tile.png')
-      game.load.image('star', 'assets/star.png');
-      game.load.spritesheet('dude', 'assets/dude.png', 32, 48);    
+
       game.load.image('egg', 'assets/egg128.png');
-      game.load.image('tetrisblock1', 'assets/tetrisblock1.png');
+      game.load.image('egg2', 'assets/egg128-2.png');
+      game.load.image('egg3', 'assets/egg128-3.png');
+      game.load.image('egg4', 'assets/egg128-4.png');
+      game.load.image('egg5', 'assets/egg128-5.png');
+      game.load.image('egg6', 'assets/egg128-6.png');
+      game.load.image('egg7', 'assets/egg128-7.png');
+      game.load.image('egg8', 'assets/egg128-8.png');
+
       game.load.image('nest', 'assets/nest.png');
       game.load.image('pillow', 'assets/pillow.png');      
       game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
       game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
-      game.load.physics('physicsData', 'assets/sprites.json');
-      game.load.physics('eggPhysicsData', 'assets/egg_physics128.json');
+      game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
     }
   
     function create() {
@@ -166,7 +175,12 @@ function setupPhaserGame() {
         contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
         contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
 
-        player = game.add.sprite(400, world_y-1500, 'egg');
+
+        // Pick an egg color at random
+        var egg_color = eggs_list[Math.floor(Math.random()*eggs_list.length)];
+        // console.log('random egg color: ' + egg_color);
+
+        player = game.add.sprite(400, world_y-1500, egg_color);
         game.physics.p2.enable(player, false);
         player.body.clearShapes();
         player.body.loadPolygon('eggPhysicsData', 'egg128');
@@ -187,7 +201,7 @@ function setupPhaserGame() {
         game.time.advancedTiming = true;
 
         // add local user to users list
-        localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y, 0);
+        localPlayer = new Player(player,socket.id, null, player.body.x, player.body.y, 0, egg_color);
 
         console.log('created local player with id: ' + socket.id);
 
@@ -257,7 +271,8 @@ function setupPhaserGame() {
                 keys: keyInputStr,
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
-                rotation: localPlayer.sprite.rotation
+                rotation: localPlayer.sprite.rotation,
+                egg_color: localPlayer.egg_color
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             //console.log(JSON.stringify(input_update));
@@ -275,7 +290,8 @@ function setupPhaserGame() {
                 keys: null,
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
-                rotation: localPlayer.sprite.rotation
+                rotation: localPlayer.sprite.rotation,
+                egg_color: localPlayer.egg_color
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             // console.log(JSON.stringify(input_update));
@@ -293,8 +309,8 @@ function setupPhaserGame() {
     }
 }
 
-function addPlayerSprite() {
-    var newPlayerSprite = game.add.sprite(getRandomInt(0,500), world_y-1500, 'egg');
+function addPlayerSprite(egg_color) {
+    var newPlayerSprite = game.add.sprite(getRandomInt(0,500), world_y-1500, egg_color);
     newPlayerSprite.anchor.setTo(0.5, 0.5);
     // game.physics.p2.enable(newPlayerSprite, false);
     //newPlayerSprite.body.clearShapes();
