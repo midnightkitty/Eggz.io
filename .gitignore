@@ -1,4 +1,5 @@
 node_modules/
+scratch/
 eggz-wrtc.pem
 package-lock.json
 server_simple-client.js
