@@ -204,13 +204,12 @@ function updatePlayers() {
             if (player.belt_color != sPlayer.belt_color) {
               console.log('updating belt color');
 
-
-              player.belt = new Phaser.Sprite(game, 0,0,'white-belt');
+              player.belt = new Phaser.Sprite(game, 0,0,sPlayer.belt_color);
               player.belt.anchor.y = 0.15;
               player.belt.anchor.x = 0.5;
               game.world.add(player.belt);
               player.sprite.addChild(player.belt);
-              player.belt_color = 'white-belt';
+              player.belt_color = sPlayer.belt_color;
             }
 
 
@@ -327,6 +326,17 @@ function updatePlayers() {
         if (!player_found) {
           console.log('adding remote player: color=' + sPlayer.egg_color);
           addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation, sPlayer.egg_color);
+        }
+      }
+      // Updates for the local player
+      else if (sPlayer.id == localPlayer.id) {
+        //console.log('localPlayer belt_color: ' + sPlayer.belt_color);
+        // check if the belt color has changed
+        if (sPlayer.belt_color != localPlayer.belt_color) {
+          localPlayer.belt_color = sPlayer.belt_color;
+          console.log('updating localPlayer belt color');
+          localPlayer.belt.loadTexture(localPlayer.belt_color);
+
         }
       }
     });
@@ -461,6 +471,13 @@ function addNewPlayer(id, x, y, rotation, egg_color) {
   newPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
   newPlayer.dialog_box.anchor.set(0.5);
   newPlayer.dialog_box.alpha = 0.5;  
+
+  // add the players ninja belt
+  newPlayer.belt = new Phaser.Sprite(game, 0,0,newPlayer.belt_color);
+  newPlayer.belt.anchor.y = 0.15;
+  newPlayer.belt.anchor.x = 0.5;
+  game.world.add(newPlayer.belt);
+  newPlayer.sprite.addChild(newPlayer.belt);
 
   players.push(newPlayer);
 }

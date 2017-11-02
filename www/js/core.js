@@ -7,7 +7,6 @@ var chat_msg_life = 3000; // how long chat messages stay on the screen in milise
 var dc_open = false; // is the data channel open?
 
 var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
-var ninja_belts = ['white-belt','yellow-belt','organge-belt','green-belt','blue-belt','purple-belt','orange-belt','brown-belt','black-belt'];
 
 var gameFocus = false;
 
@@ -24,7 +23,10 @@ class Player {
         this.name_label = {};
         this.dialog_box = {};
         this.belt = {}; // sprite assigned later
-        this.belt_color = ''; // assigned later
+        this.belt_color = 'white-belt';
+
+        // only used server side
+        this.canLevelUp = true;
     }
 }
 
@@ -127,6 +129,7 @@ function setupPhaserGame() {
         // other world objects
         game.load.image('nest', 'assets/nest.png');
         game.load.image('pillow', 'assets/pillow.png');
+        game.load.image('nest_hitbox', 'assets/nest-powerup-hitbox.png')
         
         // phsyics data for object collisions
         game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
@@ -210,6 +213,16 @@ function setupPhaserGame() {
         nest.body.loadPolygon('nestPhysicsData', 'nest');    
         nest.body.label = 'ground';
 
+        /*
+        var nest_hitbox = new Phaser.Sprite(game,0,0,'nest_hitbox');
+        nest_hitbox.anchor.x = 0.5;
+        nest_hitbox.anchor.y = 0.7;
+        game.world.add(nest_hitbox);
+        nest.addChild(nest_hitbox);
+        */
+
+
+
         var pillow = new Phaser.Sprite(game, 485,4615, 'pillow');
         game.physics.p2.enable(pillow, false);
         pillow.body.static = true;
@@ -264,6 +277,11 @@ function setupPhaserGame() {
         localPlayer.name_label.alpha = 0.5;
         localPlayer.name_label.anchor.set(0.5);
 
+        localPlayer.info_label = game.add.text(100, 4500, 'info', { font: "16px Arial", fill: "#000000", align: "center"});
+        localPlayer.info_label.alpha = 0.5;
+        localPlayer.info_label.anchor.set(0.5);
+        
+
         localPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
         localPlayer.dialog_box.alpha = 0.5;
         localPlayer.dialog_box.anchor.set(0.5);
@@ -315,6 +333,11 @@ function setupPhaserGame() {
         // update the position of the player's name label
         localPlayer.name_label.x = localPlayer.sprite.x;
         localPlayer.name_label.y  = localPlayer.sprite.y + localPlayer.sprite.height/2 + 10;
+
+        // update the position of the player's info label
+        localPlayer.info_label.x = localPlayer.sprite.x;
+        localPlayer.info_label.y  = localPlayer.sprite.y + localPlayer.sprite.height/2 + 30;      
+        localPlayer.info_label.setText('(' + Math.round(localPlayer.sprite.x / 10) * 10 + ',' + Math.round(localPlayer.sprite.y / 10) * 10 + ')');  
 
         // update the position of the player's dialog box
         localPlayer.dialog_box.x = localPlayer.sprite.x;

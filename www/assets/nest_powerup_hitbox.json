@@ -1,0 +1,11 @@
+{ 
+    
+    "nest-powerup-hitbox": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   0, 0  ,  621, 0  ,  621, 192  ,  0, 192  ]
+        }
+    ]
+}

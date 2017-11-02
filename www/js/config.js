@@ -4,6 +4,7 @@ class Config {
     constructor() {
         // WebRTC mode enabled
         this.wrtc = false;
+        this.ninja_belts = ['white-belt','yellow-belt','orange-belt','green-belt','blue-belt','purple-belt','red-belt','brown-belt','black-belt'];
     }
     
 }

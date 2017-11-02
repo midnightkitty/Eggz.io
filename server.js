@@ -12,8 +12,8 @@ var Messenger = require('./www/js/core.js').Messenger;
 var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
+var players = [];
 const server_fps = 20; // server update frequency in updates / seconds
-
 var delta; // time in ms between now and the last physics update
 
 // webrtc aliases
@@ -42,9 +42,6 @@ http.listen(port, function(){
 //
 //  WebSocket
 //
-
-var players = [];
-
 io.on('connection', function(socket) {
   console.log('a user connected via webSocket');
   players.push(new Player(null, socket.id, socket, 0, 0));
@@ -96,8 +93,6 @@ io.on('connection', function(socket) {
   });
 });  
 
-
-
 //
 // Server Messenger
 //
@@ -139,8 +134,7 @@ function consumeWSMessage(socket, type, result) {
         player.x = input.x;
         player.y = input.y;
         player.rotation = input.rotation;
-        player.egg_color = input.egg_color;
-        player.belt_color = input.belt_color;
+        player.egg_color = input.egg_color; // need to move this to server side only updates
         //console.log(player);
       }
     });
@@ -162,7 +156,7 @@ function consumeWSMessage(socket, type, result) {
     players.forEach(function(player) {
       if (player.id == id) {
         player.name = name;
-        console.log('name assigned to:' + player.id);
+        // console.log('name assigned to:' + player.id);
       }
     });
   }
@@ -187,8 +181,7 @@ function consumeDCMessage(dc1, type, result) {
         player.x = input.x;
         player.y = input.y;
         player.rotation = input.rotation;
-        player.egg_color = input.egg_color;
-        player.belt_color = input.belt_color;
+        player.egg_color = input.egg_color; // need to move this to a server side only update
         //console.log(player);
       }
     });
@@ -358,7 +351,7 @@ setInterval(function() {
     }
 
   }
-}, 2000);
+}, 10000);
 
 /**
 Length of a tick in milliseconds. The denominator is your desired framerate.
@@ -400,8 +393,10 @@ a function that takes 10 milliseconds to complete thus simulating that our game
 had a very busy time.
 */
 function update(delta) {
-  // console.log('tick: ' + delta);
+  //console.log('tick: ' + delta);
 
+
+  collisionsUpdate();
 
   var serverUpdate = {
     time: Date.now(),
@@ -448,6 +443,37 @@ function aVerySlowFunction(milliseconds) {
 
   }  
 }
+
+function collisionsUpdate() {
+
+  players.forEach(function(player) {
+
+    // player has entered the nest
+    if (player.x > 1200 && player.y < 3650) {
+      if(player.canLevelUp) {
+        //console.log('player leveled up');
+        player.canLevelUp = false;
+
+        console.log('leveling up ' + player.name + ': ' + config.ninja_belts[config.ninja_belts.indexOf(player.belt_color) + 1]);
+
+        // update the player's belt color
+        player.belt_color =  config.ninja_belts[config.ninja_belts.indexOf(player.belt_color) + 1];
+
+        //console.log(player.belt_color);
+      }
+    }
+
+    // player has hit the pillow
+    if (!player.canLevelUp && player.x < 1000 && player.y > 4400) {
+        // make sure the player isn't already leveld up all the way
+        if (config.ninja_belts.indexOf(player.belt_color) < (config.ninja_belts.length - 1)) {
+        console.log('player can level up again');
+        player.canLevelUp = true;
+        }
+    }
+  })
+}
+
 
 // begin the loop !
 gameLoop();
