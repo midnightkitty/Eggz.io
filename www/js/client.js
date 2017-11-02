@@ -200,6 +200,19 @@ function updatePlayers() {
               player.sprite.loadTexture(sPlayer.egg_color);
             }
 
+            // The server user might have an egg ninja belt, update it locally
+            if (player.belt_color != sPlayer.belt_color) {
+              console.log('updating belt color');
+
+
+              player.belt = new Phaser.Sprite(game, 0,0,'white-belt');
+              player.belt.anchor.y = 0.15;
+              player.belt.anchor.x = 0.5;
+              game.world.add(player.belt);
+              player.sprite.addChild(player.belt);
+              player.belt_color = 'white-belt';
+            }
+
 
 
             // save the serverPlayer we just found
@@ -442,7 +455,7 @@ function radians_to_degrees(radians)
 function addNewPlayer(id, x, y, rotation, egg_color) {
   var sprite = addPlayerSprite(egg_color);
   var newPlayer = new Player(sprite, id, null, x, y, rotation, egg_color);
-  newPlayer.name_label =  newPlayer.name_label = game.add.text(100, 4500, 'baddy', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+  newPlayer.name_label =  newPlayer.name_label = game.add.text(100, 4500, 'baddy', { font: "16px Arial", fill: "#000000", align: "center"});
   newPlayer.name_label.anchor.set(0.5);
   newPlayer.name_label.alpha = 0.5;
   newPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});

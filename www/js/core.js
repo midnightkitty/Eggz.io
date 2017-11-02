@@ -7,6 +7,7 @@ var chat_msg_life = 3000; // how long chat messages stay on the screen in milise
 var dc_open = false; // is the data channel open?
 
 var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
+var ninja_belts = ['white-belt','yellow-belt','organge-belt','green-belt','blue-belt','purple-belt','orange-belt','brown-belt','black-belt'];
 
 var gameFocus = false;
 
@@ -22,6 +23,8 @@ class Player {
         this.egg_color = egg_color;
         this.name_label = {};
         this.dialog_box = {};
+        this.belt = {}; // sprite assigned later
+        this.belt_color = ''; // assigned later
     }
 }
 
@@ -92,26 +95,43 @@ function setupPhaserGame() {
     game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
   
     function preload() {
-      game.load.image('sky', 'assets/blue-sky.jpg');
-      game.load.image('ground', 'assets/grass.png');
-      game.load.image('ledge', 'assets/ledge-grass.png');
-      game.load.image('ledge-tile', 'assets/ledge-tile.png');
-      game.load.image('repeating-tile', 'assets/repeating-tile.png')
+    
+        // scenery
+        game.load.image('sky', 'assets/blue-sky.jpg');
+        game.load.image('ground', 'assets/grass.png');
+        game.load.image('ledge', 'assets/ledge-grass.png');
+        game.load.image('ledge-tile', 'assets/ledge-tile.png');
+        game.load.image('repeating-tile', 'assets/repeating-tile.png')
 
-      game.load.image('egg', 'assets/egg128.png');
-      game.load.image('egg2', 'assets/egg128-2.png');
-      game.load.image('egg3', 'assets/egg128-3.png');
-      game.load.image('egg4', 'assets/egg128-4.png');
-      game.load.image('egg5', 'assets/egg128-5.png');
-      game.load.image('egg6', 'assets/egg128-6.png');
-      game.load.image('egg7', 'assets/egg128-7.png');
-      game.load.image('egg8', 'assets/egg128-8.png');
+        // egg colors
+        game.load.image('egg', 'assets/egg128.png');
+        game.load.image('egg2', 'assets/egg128-2.png');
+        game.load.image('egg3', 'assets/egg128-3.png');
+        game.load.image('egg4', 'assets/egg128-4.png');
+        game.load.image('egg5', 'assets/egg128-5.png');
+        game.load.image('egg6', 'assets/egg128-6.png');
+        game.load.image('egg7', 'assets/egg128-7.png');
+        game.load.image('egg8', 'assets/egg128-8.png');
 
-      game.load.image('nest', 'assets/nest.png');
-      game.load.image('pillow', 'assets/pillow.png');      
-      game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
-      game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
-      game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
+        // egg ninja belts
+        game.load.image('white-belt','assets/belt-white-98.png');
+        game.load.image('yellow-belt','assets/belt-yellow-98.png');
+        game.load.image('orange-belt','assets/belt-orange-98.png');
+        game.load.image('green-belt','assets/belt-green-98.png');
+        game.load.image('blue-belt','assets/belt-blue-98.png');
+        game.load.image('purple-belt','assets/belt-purple-98.png');                 
+        game.load.image('red-belt','assets/belt-red-98.png');              
+        game.load.image('brown-belt','assets/belt-brown-98.png');
+        game.load.image('black-belt','assets/belt-black-98.png');              
+
+        // other world objects
+        game.load.image('nest', 'assets/nest.png');
+        game.load.image('pillow', 'assets/pillow.png');
+        
+        // phsyics data for object collisions
+        game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
+        game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
+        game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
     }
   
     function create() {
@@ -153,7 +173,35 @@ function setupPhaserGame() {
         ts2.body.setMaterial(ledgeMaterial);
         tileLedges.add(ts2);
 
-        var nest = new Phaser.Sprite(game, 400, 500, 'nest');
+        var ts3 = new Phaser.TileSprite(game,1200,world_y-700,700,50,'repeating-tile');
+        //game.physics.arcade.enable(ts);
+        game.physics.p2.enable(ts3);
+        //ts.body.immovable = true;
+        ts3.body.static = true;
+        ts3.body.label = 'ground';
+        ts3.body.setMaterial(ledgeMaterial);
+        tileLedges.add(ts3);
+
+        var ts4 = new Phaser.TileSprite(game,600,world_y-900,300,50,'repeating-tile');
+        //game.physics.arcade.enable(ts);
+        game.physics.p2.enable(ts4);
+        //ts.body.immovable = true;
+        ts4.body.static = true;
+        ts4.body.label = 'ground';
+        ts4.body.setMaterial(ledgeMaterial);
+        tileLedges.add(ts4);        
+
+        var ts5 = new Phaser.TileSprite(game,800,world_y-1100,300,50,'repeating-tile');
+        //game.physics.arcade.enable(ts);
+        game.physics.p2.enable(ts5);
+        //ts.body.immovable = true;
+        ts5.body.static = true;
+        ts5.body.label = 'ground';
+        ts5.body.setMaterial(ledgeMaterial);
+        tileLedges.add(ts5);                
+
+
+        var nest = new Phaser.Sprite(game, 1500, world_y-1300, 'nest');
         game.physics.p2.enable(nest, false);
         nest.body.static = true;
         game.world.add(nest);
@@ -212,13 +260,21 @@ function setupPhaserGame() {
 
         game.time.events.loop(1000, updateStats, this);
 
-        localPlayer.name_label = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
+        localPlayer.name_label = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center"});
         localPlayer.name_label.alpha = 0.5;
         localPlayer.name_label.anchor.set(0.5);
 
         localPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
         localPlayer.dialog_box.alpha = 0.5;
         localPlayer.dialog_box.anchor.set(0.5);
+
+        localPlayer.belt = new Phaser.Sprite(game, 0,0,'white-belt');
+        localPlayer.belt.anchor.y = 0.15;
+        localPlayer.belt.anchor.x = 0.5;
+        game.world.add(localPlayer.belt);
+        localPlayer.sprite.addChild(localPlayer.belt);
+        localPlayer.belt_color = 'white-belt';
+
 
         // Group text/sprites to the egg (or any sprite)
         /*
@@ -314,7 +370,8 @@ function setupPhaserGame() {
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
                 rotation: localPlayer.sprite.rotation,
-                egg_color: localPlayer.egg_color
+                egg_color: localPlayer.egg_color,
+                belt_color: localPlayer.belt_color
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             //console.log(JSON.stringify(input_update));
@@ -333,7 +390,8 @@ function setupPhaserGame() {
                 x: localPlayer.sprite.x,
                 y: localPlayer.sprite.y,
                 rotation: localPlayer.sprite.rotation,
-                egg_color: localPlayer.egg_color
+                egg_color: localPlayer.egg_color,
+                belt_color: localPlayer.belt_color
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             // console.log(JSON.stringify(input_update));

@@ -140,6 +140,7 @@ function consumeWSMessage(socket, type, result) {
         player.y = input.y;
         player.rotation = input.rotation;
         player.egg_color = input.egg_color;
+        player.belt_color = input.belt_color;
         //console.log(player);
       }
     });
@@ -187,6 +188,7 @@ function consumeDCMessage(dc1, type, result) {
         player.y = input.y;
         player.rotation = input.rotation;
         player.egg_color = input.egg_color;
+        player.belt_color = input.belt_color;
         //console.log(player);
       }
     });
@@ -415,6 +417,7 @@ function update(delta) {
     p.y = player.y;
     p.rotation = player.rotation;
     p.egg_color = player.egg_color;
+    p.belt_color = player.belt_color;
     serverUpdate.player_update.push(p);
   });
   //console.log('sending update');
