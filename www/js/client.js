@@ -336,6 +336,7 @@ function updatePlayers() {
           localPlayer.belt_color = sPlayer.belt_color;
           console.log('updating localPlayer belt color');
           localPlayer.belt.loadTexture(localPlayer.belt_color);
+          emitter.emit('glowy', localPlayer.sprite.x, localPlayer.sprite.y, { repeat: 3, frequency: 500 });
 
         }
       }
@@ -555,6 +556,11 @@ function keyboardSetup() {
 
   $(document).keypress(function(e) {
     console.log(e.keyCode);
+
+    // particle emitter test
+    if (e.keyCode == 112) {
+      emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
+    }
 
     if ($('#user-id').is(':focus')) {
       if (e.keyCode == 13) {

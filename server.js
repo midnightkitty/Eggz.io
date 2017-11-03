@@ -27,6 +27,11 @@ var RTCIceCandidate         = webrtc.RTCIceCandidate;
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/www/index.html');
 });   
+
+app.get('/particle-example.html', function(req, res){
+  res.sendFile(__dirname + '/www/particle-example.html');
+});   
+      
         
 // static routing for all files in /js
 app.use('/js', express.static('www/js'));   

@@ -10,6 +10,10 @@ var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
 
 var gameFocus = false;
 
+// Phaser
+var manager = null;
+var emitter = null;
+
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
         this.sprite = sprite;
@@ -94,7 +98,7 @@ function updateWSPing(delta) {
 // Phaser game engine creation
 //
 function setupPhaserGame() {
-    game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+    game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
   
     function preload() {
     
@@ -103,7 +107,7 @@ function setupPhaserGame() {
         game.load.image('ground', 'assets/grass.png');
         game.load.image('ledge', 'assets/ledge-grass.png');
         game.load.image('ledge-tile', 'assets/ledge-tile.png');
-        game.load.image('repeating-tile', 'assets/repeating-tile.png')
+        game.load.image('repeating-tile', 'assets/repeating-tile.png');
 
         // egg colors
         game.load.image('egg', 'assets/egg128.png');
@@ -135,6 +139,12 @@ function setupPhaserGame() {
         game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
         game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
         game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
+
+        // particle test
+        game.forceSingleUpdate = true;
+        game.load.image('sky', 'assets/scratch/haze.png');
+        game.load.path = 'assets/scratch/particles/';
+        game.load.atlas('colorsHD');
     }
   
     function create() {
@@ -301,6 +311,54 @@ function setupPhaserGame() {
         text.rotation = 0;
         player.addChild(text);
         */
+
+        manager = this.game.plugins.add(Phaser.ParticleStorm);
+        
+        //  This example illustrates:
+        //  
+        //  * Selection from a list of image source names (image)
+        //  * Random range between min and max values (lifespan, vx)
+        //  * Simple control graph for constant downward acceleration (vy)
+        //  * Simple control graph to shrink from full size to half size (scaleX, scaleY)
+        //  * Simple control graph to fade alpha during the last half of it's life span
+        //  * Emission of child particles at a rate determined by the control graph (emit)
+        //  * glowyChild: Using scale instead of scaleX and scaleY to control both axis simultaneously
+        //  * glowyChild: Simple control graph to fade alpha during it's entire life span
+    
+        var glowy = {
+            image: 'colorsHD',
+            frame: [ 'yellow', 'white' ],
+            lifespan: { min: 600, max: 900 },
+            vx: { value: { min: 4, max: 12 }, delta: -0.1 },
+            vy: { value: { min: -15.0, max: -10 }, delta: 0.5 },
+            scale : { value: .5, control: [ { x: 0, y: 1 }, { x: 1, y: 0.5 } ] },
+            alpha: { value: 1, control: [ { x: 0, y: 1 }, { x: 0.5, y: 1 }, { x: 1, y: 0 } ] },
+            emit: {
+                name: 'glowyChild',
+                value: 1,
+                control: [ { x: 0, y: 0 }, { x: 0.2, y: 0 }, { x: 1, y: 1 } ]
+            }
+        };
+    
+        var glowyChild = {
+            image: 'colorsHD',
+            frame: [ 'red', 'green', 'blue' ],
+            blendMode: 'HARD_LIGHT',
+            lifespan: 1000,
+            vx: { min: -4, max: 4 },
+            vy: { value: { min: -10, max: -6 }, delta: 0.5 },
+            scale: { value: { min: 0.5, max: .25 }, control: [ { x: 0, y: 1 }, { x: 1, y: 0.5 } ] },
+            alpha: { value: 1, control: [ { x: 0, y: 1 }, { x: 1, y: 0 } ] }
+        };
+    
+        manager.addData('glowy', glowy);
+        manager.addData('glowyChild', glowyChild);
+        emitter = manager.createEmitter();
+        emitter.addToWorld();
+    }
+
+    function render() {
+
     }
   
     function playerHit(body, bodyB, shapeA, shapeB, equation) {
