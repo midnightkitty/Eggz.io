@@ -14,6 +14,14 @@ var gameFocus = false;
 var manager = null;
 var emitter = null;
 
+/*tiles */
+var map;
+var tileset;
+var layer;
+var p;
+var cursors;
+/*tiles */
+
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
         this.sprite = sprite;
@@ -104,10 +112,6 @@ function setupPhaserGame() {
     
         // scenery
         game.load.image('sky', 'assets/blue-sky.jpg');
-        game.load.image('ground', 'assets/grass.png');
-        game.load.image('ledge', 'assets/ledge-grass.png');
-        game.load.image('ledge-tile', 'assets/ledge-tile.png');
-        game.load.image('repeating-tile', 'assets/repeating-tile.png');
 
         // egg colors
         game.load.image('egg', 'assets/egg128.png');
@@ -140,6 +144,10 @@ function setupPhaserGame() {
         game.load.physics('nestPhysicsData', 'assets/nest_physics.json');
         game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
 
+        // *tiles*
+        game.load.tilemap('eggz-tile-map', 'assets/eggz.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.image('tiles', 'assets/eggz-tiles.png');        
+
         // particle test
         game.forceSingleUpdate = true;
         game.load.image('sky', 'assets/scratch/haze.png');
@@ -148,98 +156,42 @@ function setupPhaserGame() {
     }
   
     function create() {
-  
-    //    game.time.advancedTiming = true;
-    //    game.time.desiredFps = 45;
 
-        game.physics.startSystem(Phaser.Physics.P2JS);
+        game.physics.startSystem(Phaser.Physics.P2JS);        
 
+        // background image
         var sky = game.add.sprite(0, 0, 'sky');
-        sky.scale.setTo(1.5,1.5);
+        sky.scale.setTo(1.5,1.5);        
 
-        tileLedges = game.add.group();
+        map = game.add.tilemap('eggz-tile-map');
+        map.addTilesetImage('eggz-tiles', 'tiles');        
 
-        var gr = new Phaser.TileSprite(game,0,world_y-100,10000,300,'repeating-tile');
-        //game.physics.arcade.enable(gr);
-        game.physics.p2.enable(gr);
-        //gr.body.immovable = true;
-        gr.body.label = 'ground';
-        gr.body.static = true;
-        gr.body.setMaterial(ledgeMaterial);
-        tileLedges.add(gr);
+        layer = map.createLayer('World1');      
 
-        var ts = new Phaser.TileSprite(game,1500,world_y-400,537,50,'repeating-tile');
-        //game.physics.arcade.enable(ts);
-        game.physics.p2.enable(ts);
-        //ts.body.immovable = true;
-        ts.body.label = 'ground';
-        ts.body.static = true;
-        ts.body.setMaterial(ledgeMaterial);
-        tileLedges.add(ts);
+        // must set which tiles have collisions enabled BEFORE calling converTilemap
+        map.setCollision(1);
+        map.setCollision(21);
 
-        var ts2 = new Phaser.TileSprite(game,2500,world_y-600,1000,50,'repeating-tile');
-        //game.physics.arcade.enable(ts);
-        game.physics.p2.enable(ts2);
-        //ts.body.immovable = true;
-        ts2.body.static = true;
-        ts2.body.label = 'ground';
-        ts2.body.setMaterial(ledgeMaterial);
-        tileLedges.add(ts2);
+        game.physics.p2.convertTilemap(map, layer);
+    
+        //layer.debug = true;  
+        //game.time.advancedTiming = true;
+        //game.time.desiredFps = 45;
 
-        var ts3 = new Phaser.TileSprite(game,1200,world_y-700,700,50,'repeating-tile');
-        //game.physics.arcade.enable(ts);
-        game.physics.p2.enable(ts3);
-        //ts.body.immovable = true;
-        ts3.body.static = true;
-        ts3.body.label = 'ground';
-        ts3.body.setMaterial(ledgeMaterial);
-        tileLedges.add(ts3);
-
-        var ts4 = new Phaser.TileSprite(game,600,world_y-900,300,50,'repeating-tile');
-        //game.physics.arcade.enable(ts);
-        game.physics.p2.enable(ts4);
-        //ts.body.immovable = true;
-        ts4.body.static = true;
-        ts4.body.label = 'ground';
-        ts4.body.setMaterial(ledgeMaterial);
-        tileLedges.add(ts4);        
-
-        var ts5 = new Phaser.TileSprite(game,800,world_y-1100,300,50,'repeating-tile');
-        //game.physics.arcade.enable(ts);
-        game.physics.p2.enable(ts5);
-        //ts.body.immovable = true;
-        ts5.body.static = true;
-        ts5.body.label = 'ground';
-        ts5.body.setMaterial(ledgeMaterial);
-        tileLedges.add(ts5);                
-
-
-        var nest = new Phaser.Sprite(game, 1500, world_y-1300, 'nest');
+        var nest = new Phaser.Sprite(game, 1000, 1280, 'nest');
         game.physics.p2.enable(nest, false);
         nest.body.static = true;
         game.world.add(nest);
-        // game.physics.arcade.enable(tetris1);
         nest.body.clearShapes();
         nest.body.loadPolygon('nestPhysicsData', 'nest');    
         nest.body.label = 'ground';
 
-        /*
-        var nest_hitbox = new Phaser.Sprite(game,0,0,'nest_hitbox');
-        nest_hitbox.anchor.x = 0.5;
-        nest_hitbox.anchor.y = 0.7;
-        game.world.add(nest_hitbox);
-        nest.addChild(nest_hitbox);
-        */
-
-
-
-        var pillow = new Phaser.Sprite(game, 485,4615, 'pillow');
+        var pillow = new Phaser.Sprite(game, 485,4410, 'pillow');
         game.physics.p2.enable(pillow, false);
         pillow.body.static = true;
         game.world.add(pillow);
         pillow.body.clearShapes();
-        pillow.body.loadPolygon('pillowPhysicsData', 'pillow');    
-        pillow.body.label = 'ground';
+        pillow.body.loadPolygon('pillowPhysicsData', 'pillow');
 
         var playerMaterial = game.physics.p2.createMaterial('playerMaterial');
         var ledgeMaterial = game.physics.p2.createMaterial('ledgeMaterial');    
@@ -251,19 +203,15 @@ function setupPhaserGame() {
         contactMaterial.frictionStiffness = 1e20;    // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.
         contactMaterial.surfaceVelocity = 0;        // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
 
-
         // Pick an egg color at random
         var egg_color = eggs_list[Math.floor(Math.random()*eggs_list.length)];
         // console.log('random egg color: ' + egg_color);
 
-        player = game.add.sprite(400, world_y-1500, egg_color);
+        player = game.add.sprite(400, 1500, egg_color);
         game.physics.p2.enable(player, false);
         player.body.clearShapes();
         player.body.loadPolygon('eggPhysicsData', 'egg128');
         player.body.setMaterial(playerMaterial);
-        player.body.onGround = false;
-        player.body.onBeginContact.add(playerHit, this);
-        player.body.onEndContact.add(playerNoHit, this);
         player.anchor.setTo(0.5, 0.5);
 
         game.physics.p2.gravity.y = 300;
@@ -288,10 +236,10 @@ function setupPhaserGame() {
         localPlayer.name_label.anchor.set(0.5);
 
         localPlayer.info_label = game.add.text(100, 4500, 'info', { font: "16px Arial", fill: "#000000", align: "center"});
-        localPlayer.info_label.alpha = 0.5;
         localPlayer.info_label.anchor.set(0.5);
+        // Set whether the info label is visible or not
+        localPlayer.info_label.visible = config.info_label;
         
-
         localPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
         localPlayer.dialog_box.alpha = 0.5;
         localPlayer.dialog_box.anchor.set(0.5);
@@ -302,15 +250,6 @@ function setupPhaserGame() {
         game.world.add(localPlayer.belt);
         localPlayer.sprite.addChild(localPlayer.belt);
         localPlayer.belt_color = 'white-belt';
-
-
-        // Group text/sprites to the egg (or any sprite)
-        /*
-        text = game.add.text(100, 100, 'baddy', { font: "32px Arial", fill: "#ff0044", wordWrap: true, wordWrapWidth: 300, align: "center", backgroundColor: "#ffff00" });
-        text.anchor.set(0.5);
-        text.rotation = 0;
-        player.addChild(text);
-        */
 
         manager = this.game.plugins.add(Phaser.ParticleStorm);
         
@@ -360,24 +299,30 @@ function setupPhaserGame() {
     function render() {
 
     }
-  
-    function playerHit(body, bodyB, shapeA, shapeB, equation) {
-      //console.log('player contact ' + body.label);
-      if (body && body.label && body.label == 'ground')
-        player.body.onGround = true;
-    }
-  
-    function playerNoHit(body, bodyB, shapeA, shapeB, equation) {
-      //console.log('contact ended');
-      if (body && body.label && body.label == 'ground')
-        player.body.onGround = false;
+
+    function canPlayerJump() {
+        var yAxis = p2.vec2.fromValues(0, 1);
+        var result = false;
+    
+        for (var i = 0; i < game.physics.p2.world.narrowphase.contactEquations.length; i++)
+        {
+            var c = game.physics.p2.world.narrowphase.contactEquations[i];
+    
+            if (c.bodyA === localPlayer.sprite.body.data || c.bodyB === localPlayer.sprite.body.data)
+            {
+                var d = p2.vec2.dot(c.normalA, yAxis); // Normal dot Y-axis
+                if (c.bodyA === localPlayer.sprite.body.data) d *= -1;
+                if (d > 0.5) result = true;
+            }
+        }
+        
+        return result;
     }
   
   
     function updateStats() {
       $('#stats').html('FPS:' + game.time.fps);
     }
-  
   
     $(window).resize(function() {
       game.scale.setGameSize(window.innerWidth, window.innerHeight)
@@ -418,11 +363,10 @@ function setupPhaserGame() {
             if (Math.abs(player.body.velocity.x) < max_velocity)
                 player.body.force.x = (150 * player_speed);
             }
-        // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
+            // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
             
-            //  Allow the player to jump if they are touching the ground.
-            if (cursors.up.isDown && player.body.onGround) {
-            player.body.velocity.y = -350;
+            if (cursors.up.isDown && canPlayerJump()) {
+                player.body.velocity.y = -350;
             }
 
             // limit max vertical velocity up
@@ -493,10 +437,6 @@ function setupPhaserGame() {
 function addPlayerSprite(egg_color) {
     var newPlayerSprite = game.add.sprite(getRandomInt(0,500), world_y-1500, egg_color);
     newPlayerSprite.anchor.setTo(0.5, 0.5);
-    // game.physics.p2.enable(newPlayerSprite, false);
-    //newPlayerSprite.body.clearShapes();
-    //newPlayerSprite.body.loadPolygon('eggPhysicsData', 'egg128');
-    //newPlayerSprite.body.immovable = true;
     return newPlayerSprite;
 }
 
@@ -505,7 +445,6 @@ function getRandomInt(min, max) {
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
-
 
 // Try will fail when included by the client browser
 try {

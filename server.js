@@ -454,9 +454,9 @@ function collisionsUpdate() {
   players.forEach(function(player) {
 
     // player has entered the nest
-    if (player.x > 1200 && player.y < 3650) {
+    if (player.x > 750 && player.x < 1200 && player.y < 1300 && player.y > 1000) {
       if(player.canLevelUp) {
-        //console.log('player leveled up');
+        console.log('player leveled up');
         player.canLevelUp = false;
 
         console.log('leveling up ' + player.name + ': ' + config.ninja_belts[config.ninja_belts.indexOf(player.belt_color) + 1]);
@@ -468,8 +468,8 @@ function collisionsUpdate() {
       }
     }
 
-    // player has hit the pillow
-    if (!player.canLevelUp && player.x < 1000 && player.y > 4400) {
+    // player has hit the pillow hitbox
+    if (!player.canLevelUp && player.x < 900 && player.y > 4100) {
         // make sure the player isn't already leveld up all the way
         if (config.ninja_belts.indexOf(player.belt_color) < (config.ninja_belts.length - 1)) {
         console.log('player can level up again');
