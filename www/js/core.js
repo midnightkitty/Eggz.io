@@ -14,6 +14,9 @@ var gameFocus = false;
 var manager = null;
 var emitter = null;
 
+
+var eggEmitter;
+
 /*tiles */
 var map;
 var tileset;
@@ -137,7 +140,8 @@ function setupPhaserGame() {
         // other world objects
         game.load.image('nest', 'assets/nest.png');
         game.load.image('pillow', 'assets/pillow.png');
-        game.load.image('nest_hitbox', 'assets/nest-powerup-hitbox.png')
+        game.load.image('nest_hitbox', 'assets/nest-powerup-hitbox.png');
+        game.load.spritesheet('egg-explode', 'assets/egg-explode-frames.png', 17, 17);
         
         // phsyics data for object collisions
         game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');

@@ -13,6 +13,7 @@ var platforms;
 var player;
 var cursors;
 
+
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
@@ -560,6 +561,17 @@ function keyboardSetup() {
     // particle emitter test
     if (e.keyCode == 112) {
       emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
+    }
+
+    if (e.keyCode == 101) {
+      game.physics.startSystem(Phaser.Physics.P2JS);     
+      eggEmitter = game.add.emitter(localPlayer.sprite.x,  localPlayer.sprite.y);
+      eggEmitter.bounce.setTo(0.5, 0.5);
+      eggEmitter.setXSpeed(-150, 150);
+      eggEmitter.setYSpeed(-150, 150);
+      eggEmitter.setScale(0.5,2.5,0.5,2.5,0,0,false);
+      eggEmitter.makeParticles('egg-explode', 0,20, true, true);
+      eggEmitter.start(false, 10000, 1, 50);
     }
 
     if ($('#user-id').is(':focus')) {
