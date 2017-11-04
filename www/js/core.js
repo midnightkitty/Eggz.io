@@ -150,9 +150,8 @@ function setupPhaserGame() {
 
         // particle test
         game.forceSingleUpdate = true;
-        game.load.image('sky', 'assets/scratch/haze.png');
-        game.load.path = 'assets/scratch/particles/';
-        game.load.atlas('colorsHD');
+        game.load.image('sky', 'assets/haze.png');
+        game.load.atlas('colorsHD', 'assets/colorsHD.png', 'assets/colorsHD.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
     }
   
     function create() {
