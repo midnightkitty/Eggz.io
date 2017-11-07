@@ -17,13 +17,12 @@ var emitter = null;
 
 var eggEmitter;
 
-/*tiles */
 var map;
 var tileset;
 var layer;
 var p;
 var cursors;
-/*tiles */
+var space_bar;
 
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
@@ -217,13 +216,15 @@ function setupPhaserGame() {
         player.body.setMaterial(playerMaterial);
         player.anchor.setTo(0.5, 0.5);
 
-        game.physics.p2.gravity.y = 300;
-        game.physics.p2.restitution = 0.3;
+        game.physics.p2.gravity.y = config.gravity;
+        game.physics.p2.restitution = config.restitution;
 
         game.world.setBounds(0,0,world_x,world_y);
         game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 
         cursors = game.input.keyboard.createCursorKeys();
+
+        space_bar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         game.stage.disableVisibilityChange = true;
         game.time.advancedTiming = true;
 
@@ -297,6 +298,8 @@ function setupPhaserGame() {
         manager.addData('glowyChild', glowyChild);
         emitter = manager.createEmitter();
         emitter.addToWorld();
+
+        dash_meter = new DashMeter();
     }
 
     function render() {
@@ -328,7 +331,8 @@ function setupPhaserGame() {
     }
   
     $(window).resize(function() {
-      game.scale.setGameSize(window.innerWidth, window.innerHeight)
+      game.scale.setGameSize(window.innerWidth, window.innerHeight);
+      layer.resize(window.innerWidth, window.innerHeight);
     })
 
     //
@@ -351,25 +355,51 @@ function setupPhaserGame() {
         
         // keep track of the time and delta time between each physics update
         client_dpt = Date.now() - client_lpt;
+        // first time client_lpt is null;
+        if (client_dpt == undefined || Number.isNaN(client_dpt))
+            client_dpt = 0;
         client_lpt = Date.now();
         // console.log(client_dpt); at 60FPS this is about 16ms
 
         // only allow player movement if the game is in focus
         if (gameFocus) {
-            if (cursors.left.isDown) {
+
+            if (cursors.left.isDown || game.input.keyboard.isDown(Phaser.Keyboard.A)) {
+
+                // slow momentum when user changes direction
+                if (player.body.velocity.x > 0) {
+                    player.body.velocity.x = player.body.velocity.x / 2;
+                }
+
+                //  Dash to the left
+                if (space_bar.isDown) {
+                    player.body.force.x = (-150 * dash_speed);
+                }
                 //  Move to the left
-                if (Math.abs(player.body.velocity.x) < max_velocity)
-                    player.body.force.x = (-150 * player_speed);
+                else if (Math.abs(player.body.velocity.x) < max_velocity) {
+                    player.body.force.x = (-150 * config.player_speed);
+                }
             }
-            else if (cursors.right.isDown) {
-            //  Move to the right
-            if (Math.abs(player.body.velocity.x) < max_velocity)
-                player.body.force.x = (150 * player_speed);
+            else if (cursors.right.isDown || game.input.keyboard.isDown(Phaser.Keyboard.D)) {
+
+                // slow momentum when user changes direction
+                if (player.body.velocity.x < 0) {
+                    player.body.velocity.x = player.body.velocity.x / 2;
+                }
+
+                //  Dash to the right
+                if (space_bar.isDown) {
+                    player.body.force.x = (150 * dash_speed);
+                }
+                // Move to the right
+                else if (Math.abs(player.body.velocity.x) < max_velocity) {
+                    player.body.force.x = (150 * config.player_speed);
+                }
+                // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
             }
-            // console.log('(' + player.body.velocity.x + ',' + player.body.velocity.y + ')');
             
-            if (cursors.up.isDown && canPlayerJump()) {
-                player.body.velocity.y = -350;
+            if ( (cursors.up.isDown || game.input.keyboard.isDown(Phaser.Keyboard.W)) && canPlayerJump()) {
+                player.body.velocity.y = -config.player_jump_force;
             }
 
             // limit max vertical velocity up
@@ -379,6 +409,15 @@ function setupPhaserGame() {
             // limit max vertical velocity down
             if (player.body.velocity.y > 500)
                 player.body.velocity.y = 500;
+
+            // unless we are dashing and have charge, limit x velocity
+            if (dash_meter.charge_level < 5) {
+                if (player.body.velocity.x > config.player_max_x_velocity)
+                    player.body.velocity.x = config.player_max_x_velocity;
+                
+                if (player.body.velocity.x < -config.player_max_x_velocity)
+                    player.body.velocity.x = -config.player_max_x_velocity;
+            }
         }
 
         // Error key presses should close the chat window if it's open
@@ -433,6 +472,17 @@ function setupPhaserGame() {
         }
 
         updatePlayers();
+
+        // Drain the dash meter if space bar is down,
+        // otherwise recharge it
+        if (space_bar.isDown) {
+            dash_meter.drain();
+        }
+        else {
+            dash_meter.charge();
+        }
+
+        dash_meter.draw();
 
     }
 }

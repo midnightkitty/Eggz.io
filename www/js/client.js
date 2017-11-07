@@ -32,12 +32,13 @@ var localPlayer = {};
 const world_x = 5000; 
 const world_y = 5000;
 
-var player_speed = 2;
+var dash_speed = 20;
 
 var keys = {};
 var keyInputStr;
 
 var tileLedge;
+var dash_meter;
 
 $(document).ready(function() {
   setupPhaserGame();
@@ -49,6 +50,53 @@ $(document).ready(function() {
     setupWebRTC();
   }
 });
+
+//
+// Dash Meter
+//
+class DashMeter {
+
+  constructor() {
+    this.charge_level = 0;
+    this.dash_meter_bg = game.add.graphics(0, 0);
+    this.dash_meter_bar = game.add.graphics(0, 0);
+  }
+
+  charge() {
+      var charge_increment = (client_dpt / config.dash_charge_time)  * 100;
+      this.charge_level = Math.min(this.charge_level + charge_increment, 100);
+      //console.log(this.charge_level);
+}
+
+  drain() {
+    // don't drain to less than zero
+    if (this.charge_level > 0) {
+      var charge_increment = (client_dpt / config.dash_discharge_time)  * 100;
+      this.charge_level = Math.max(this.charge_level - charge_increment, 0);
+     // console.log(this.charge_level);
+    }    
+  }
+
+  draw() {
+    // draw the background
+    this.dash_meter_bg.clear();
+    this.dash_meter_bg.lineStyle(0, 0xffffff);
+    this.dash_meter_bg.beginFill(0x4c5056);
+    this.dash_meter_bg.alpha = 0.75;
+    this.dash_meter_bg.drawRect(game.camera.x-10, game.camera.y + window.innerHeight-5, window.innerWidth+30, 50);  
+    
+    // draw the meter bar
+    this.dash_meter_bar.clear();
+    this.dash_meter_bar.lineStyle(0, 0xffffff);
+    this.dash_meter_bar.beginFill(0x03c672);
+    this.dash_meter_bar.alpha = 0.75;
+    this.dash_meter_bar.drawRect(game.camera.x-10, 
+                                                game.camera.y + window.innerHeight-5, 
+                                                ( (window.innerWidth + 5) / 100) * this.charge_level + 30, 
+                                                50);    
+  }
+
+}
 
 //
 //  ClientMessenger class
@@ -535,6 +583,12 @@ function pageSetup() {
   $('#refresh-button').click(function() {
     location.reload();
   });
+
+  if (config.debug) {
+    $('#ws-ping').show();
+    $('#dc-ping').show();
+    $('#stats').show();
+  }
 }
 
 function login() {
@@ -561,17 +615,6 @@ function keyboardSetup() {
     // particle emitter test
     if (e.keyCode == 112) {
       emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
-    }
-
-    if (e.keyCode == 101) {
-      game.physics.startSystem(Phaser.Physics.P2JS);     
-      eggEmitter = game.add.emitter(localPlayer.sprite.x,  localPlayer.sprite.y);
-      eggEmitter.bounce.setTo(0.5, 0.5);
-      eggEmitter.setXSpeed(-150, 150);
-      eggEmitter.setYSpeed(-150, 150);
-      eggEmitter.setScale(0.5,2.5,0.5,2.5,0,0,false);
-      eggEmitter.makeParticles('egg-explode', 0,20, true, true);
-      eggEmitter.start(false, 10000, 1, 50);
     }
 
     if ($('#user-id').is(':focus')) {
