@@ -22,7 +22,6 @@ var tileset;
 var layer;
 var p;
 var cursors;
-var space_bar;
 
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
@@ -224,7 +223,7 @@ function setupPhaserGame() {
 
         cursors = game.input.keyboard.createCursorKeys();
 
-        space_bar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        //space_bar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
         game.stage.disableVisibilityChange = true;
         game.time.advancedTiming = true;
 
@@ -372,7 +371,7 @@ function setupPhaserGame() {
                 }
 
                 //  Dash to the left
-                if (space_bar.isDown) {
+                if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
                     player.body.force.x = (-150 * dash_speed);
                 }
                 //  Move to the left
@@ -388,7 +387,7 @@ function setupPhaserGame() {
                 }
 
                 //  Dash to the right
-                if (space_bar.isDown) {
+                if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
                     player.body.force.x = (150 * dash_speed);
                 }
                 // Move to the right
@@ -475,7 +474,7 @@ function setupPhaserGame() {
 
         // Drain the dash meter if space bar is down,
         // otherwise recharge it
-        if (space_bar.isDown) {
+        if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
             dash_meter.drain();
         }
         else {
