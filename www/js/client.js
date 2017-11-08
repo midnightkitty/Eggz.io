@@ -17,7 +17,7 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 100;  // ms behind server that we update data from the server
+const net_offset = 300;  // ms behind server that we update data from the server
 const buffer_size = 300; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
@@ -75,6 +75,11 @@ class DashMeter {
       this.charge_level = Math.max(this.charge_level - charge_increment, 0);
      // console.log(this.charge_level);
     }    
+  }
+
+  destroy() {
+    this.dash_meter_bar.destroy();
+    this.dash_meter_bg.destroy();
   }
 
   draw() {
@@ -261,6 +266,22 @@ function updatePlayers() {
               player.belt_color = sPlayer.belt_color;
             }
 
+            // update alive / dead status
+            if (player.is_alive != sPlayer.is_alive) {
+              console.log('updating player alive status to: ' + sPlayer.is_alive);
+            }
+
+            // If the server tells us the player is dead, but local copy is alive,
+            // initiate death for remote player
+            if (!sPlayer.is_alive && player.is_alive && !(player === localPlayer)) {
+              console.log('killing remote player');
+              death(player);
+            }
+
+            player.is_alive = sPlayer.is_alive;
+
+
+
 
 
             // save the serverPlayer we just found
@@ -386,8 +407,15 @@ function updatePlayers() {
           console.log('updating localPlayer belt color');
           localPlayer.belt.loadTexture(localPlayer.belt_color);
           emitter.emit('glowy', localPlayer.sprite.x, localPlayer.sprite.y, { repeat: 3, frequency: 500 });
-
         }
+
+        // update alive / dead status
+        if (localPlayer.is_alive != sPlayer.is_alive) {
+          //console.log('updating player' + localPlayer.is_alive +' to: ' + sPlayer.is_alive);
+        }
+
+        if (!sPlayer.is_alive)
+          death(localPlayer);
       }
     });
   }
@@ -413,12 +441,16 @@ function removeMissingPlayers(serverUpdate) {
     // If we couldn't find the local player on the server update list
     // they must have dropped from the game, remove their player locally
     if (!found) {
-      console.log('removing dropped other player');
+      console.log('removing dropped/dead other player');
       var index = players.indexOf(client_player);
       // remove the sprite from the phaser world
-      players[index].dialog_box.destroy();
-      players[index].name_label.destroy();
-      players[index].sprite.destroy();
+      //players[index].dialog_box.destroy();
+      //players[index].name_label.destroy();
+      //players[index].sprite.destroy();
+
+      // If we haven't killed this player already, do it now
+      if (client_player.is_alive)
+        death(players[index]);
       // remove the player from the players list
       players.splice(index,1)
     }
@@ -603,6 +635,64 @@ function login() {
   }
 }
 
+function death(deadPlayer) {
+  console.log('death');
+
+  deadPlayer.is_alive = false;
+
+  // destroy the players egg
+  deadPlayer.sprite.destroy();
+  deadPlayer.name_label.destroy();
+
+  // If it's a local player, also destroy debug info and dash meter
+  if (deadPlayer === localPlayer) {
+    // stop moving the camera
+    game.camera.follow(null);
+
+    deadPlayer.info_label.destroy();
+    dash_meter.destroy();
+  }
+
+  // index in the egg colors array should be the same index in the shell pieces array
+  var index = eggs_list.indexOf(deadPlayer.egg_color);
+
+  var dead_egg_shells = [];
+  for (var j = 0; j < eggs_shell_list.length; j++) {
+    //console.log('loading shell pieces for ' + eggs_shell_list[j]);
+    dead_egg_shells[j] = [];
+
+    for (var i = 0; i < egg_shells_piece_count; i++) {
+        dead_egg_shells[j][i] = new Phaser.Sprite(game, 0,0,eggs_shell_list[j], i);
+    }
+  }
+
+
+  for (var i = 0; i < egg_shells_piece_count; i++) {
+    dead_egg_shells[index][i].x = deadPlayer.sprite.x;
+    dead_egg_shells[index][i].y = deadPlayer.sprite.y;
+    game.physics.p2.enable(dead_egg_shells[index][i], false);
+    dead_egg_shells[index][i].body.clearShapes();
+    dead_egg_shells[index][i].body.loadPolygon('egg-shell-physics-data', 'egg128-shell' + (i+1));
+    game.world.add(dead_egg_shells[index][i]);
+  }
+
+  setTimeout(function() {
+    //console.log('removing dead shells');
+    
+    //console.log(dead_egg_shells[index]);
+    for(var i = 0; i < dead_egg_shells[index].length; i++) {
+      //console.log('destorying dead_egg_shells[' + index + '][' + i + ']');
+      dead_egg_shells[index][i].destroy();
+    }
+  }, 5000);
+
+
+  setTimeout(function() {
+    if (deadPlayer === localPlayer)
+      location.reload();
+  }, 8000);
+}
+
 
 //
 // Keyboard menu setup
@@ -615,6 +705,10 @@ function keyboardSetup() {
     // particle emitter test
     if (e.keyCode == 112) {
       emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
+    }
+
+    if (e.keyCode == 101) {
+      //death(localPlayer);
     }
 
     if ($('#user-id').is(':focus')) {

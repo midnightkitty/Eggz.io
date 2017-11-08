@@ -1,0 +1,48 @@
+{ 
+    
+    "egg128-shell1": [
+        
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   20, 64  ,  27, 40  ,  39, 21  ,  49, 12  ,  64, 8  ,  64, 64  ]
+        }
+    ]
+    , 
+    "egg128-shell2": [
+        
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   0, 8  ,  26, 22  ,  40, 47  ,  44, 64  ,  0, 64  ]
+        } ,
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   26, 22  ,  0, 8  ,  12, 10  ]
+        }
+    ]
+    , 
+    "egg128-shell3": [
+        
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   64, 56  ,  45, 53  ,  28, 40  ,  20, 23  ,  18, 4  ,  19, 0  ,  64, 0  ]
+        }
+    ]
+    , 
+    "egg128-shell4": [
+        
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   45, 0  ,  46, 10  ,  11, 55  ,  0, 56  ,  0, 0  ]
+        } ,
+        {
+            "density": 50, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   11, 55  ,  46, 10  ,  46, 20  ,  38, 37  ,  25, 50  ]
+        }
+    ]
+}

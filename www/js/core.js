@@ -7,13 +7,13 @@ var chat_msg_life = 3000; // how long chat messages stay on the screen in milise
 var dc_open = false; // is the data channel open?
 
 var eggs_list = ['egg','egg2','egg3','egg4','egg5','egg6','egg7','egg8'];
+var eggs_shell_list = ['egg-shell','egg-shell2','egg-shell3','egg-shell4','egg-shell5','egg-shell6','egg-shell7','egg-shell8'];
 
 var gameFocus = false;
 
 // Phaser
 var manager = null;
 var emitter = null;
-
 
 var eggEmitter;
 
@@ -22,6 +22,9 @@ var tileset;
 var layer;
 var p;
 var cursors;
+
+var egg_shells = [];
+var egg_shells_piece_count = 4;
 
 class Player {
     constructor(sprite, id, socket, x, y, rotation, egg_color) {
@@ -37,6 +40,7 @@ class Player {
         this.dialog_box = {};
         this.belt = {}; // sprite assigned later
         this.belt_color = 'white-belt';
+        this.is_alive = true;
 
         // only used server side
         this.canLevelUp = true;
@@ -116,13 +120,28 @@ function setupPhaserGame() {
 
         // egg colors
         game.load.image('egg', 'assets/egg128.png');
+        game.load.spritesheet('egg-shell', 'assets/egg128.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg2', 'assets/egg128-2.png');
+        game.load.spritesheet('egg-shell2', 'assets/egg128-2.png', 64, 64, egg_shells_piece_count);   
+
         game.load.image('egg3', 'assets/egg128-3.png');
+        game.load.spritesheet('egg-shell3', 'assets/egg128-3.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg4', 'assets/egg128-4.png');
+        game.load.spritesheet('egg-shell4', 'assets/egg128-4.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg5', 'assets/egg128-5.png');
+        game.load.spritesheet('egg-shell5', 'assets/egg128-5.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg6', 'assets/egg128-6.png');
+        game.load.spritesheet('egg-shell6', 'assets/egg128-6.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg7', 'assets/egg128-7.png');
+        game.load.spritesheet('egg-shell7', 'assets/egg128-7.png', 64, 64, egg_shells_piece_count);
+
         game.load.image('egg8', 'assets/egg128-8.png');
+        game.load.spritesheet('egg-shell8', 'assets/egg128-8.png', 64, 64, egg_shells_piece_count);        
 
         // egg ninja belts
         game.load.image('white-belt','assets/belt-white-98.png');
@@ -139,7 +158,6 @@ function setupPhaserGame() {
         game.load.image('nest', 'assets/nest.png');
         game.load.image('pillow', 'assets/pillow.png');
         game.load.image('nest_hitbox', 'assets/nest-powerup-hitbox.png');
-        game.load.spritesheet('egg-explode', 'assets/egg-explode-frames.png', 17, 17);
         
         // phsyics data for object collisions
         game.load.physics('pillowPhysicsData', 'assets/pillow_physics.json');
@@ -147,13 +165,16 @@ function setupPhaserGame() {
         game.load.physics('eggPhysicsData', 'assets/egg_physics128_detailed.json');
 
         // *tiles*
-        game.load.tilemap('eggz-tile-map', 'assets/eggz.json', null, Phaser.Tilemap.TILED_JSON);
+        game.load.tilemap('eggz-tile-map', 'assets/tile-map1.json', null, Phaser.Tilemap.TILED_JSON);
         game.load.image('tiles', 'assets/eggz-tiles.png');        
 
         // particle test
         game.forceSingleUpdate = true;
         game.load.image('sky', 'assets/haze.png');
         game.load.atlas('colorsHD', 'assets/colorsHD.png', 'assets/colorsHD.json', Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+
+        // physics for the egg shells
+        game.load.physics('egg-shell-physics-data', 'assets/shell/egg-shell-128.json');
     }
   
     function create() {
@@ -171,6 +192,7 @@ function setupPhaserGame() {
 
         // must set which tiles have collisions enabled BEFORE calling converTilemap
         map.setCollision(1);
+        map.setCollision(3);
         map.setCollision(21);
 
         game.physics.p2.convertTilemap(map, layer);
@@ -339,6 +361,10 @@ function setupPhaserGame() {
     //
     function update() {
 
+        // is the player dead? don't update its physics
+        if (!localPlayer.is_alive)
+            return;
+
         // update the position of the player's name label
         localPlayer.name_label.x = localPlayer.sprite.x;
         localPlayer.name_label.y  = localPlayer.sprite.y + localPlayer.sprite.height/2 + 10;
@@ -437,7 +463,8 @@ function setupPhaserGame() {
                 y: localPlayer.sprite.y,
                 rotation: localPlayer.sprite.rotation,
                 egg_color: localPlayer.egg_color,
-                belt_color: localPlayer.belt_color
+                belt_color: localPlayer.belt_color,
+                is_alive: localPlayer.is_alive
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             //console.log(JSON.stringify(input_update));
@@ -457,7 +484,8 @@ function setupPhaserGame() {
                 y: localPlayer.sprite.y,
                 rotation: localPlayer.sprite.rotation,
                 egg_color: localPlayer.egg_color,
-                belt_color: localPlayer.belt_color
+                belt_color: localPlayer.belt_color,
+                is_alive: localPlayer.is_alive
             }
             // console.log(keyInputStr + '(' + player.body.x + ',' + player.body.y + ')');
             // console.log(JSON.stringify(input_update));

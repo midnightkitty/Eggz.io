@@ -1,0 +1,11 @@
+{ 
+    
+    "egg-shell-1": [
+        
+        {
+            "density": 2, "friction": 0, "bounce": 0, 
+            "filter": { "categoryBits": 1, "maskBits": 65535 },
+            "shape": [   15, 1  ,  15, 6  ,  13, 11  ,  10, 14  ,  6, 16  ,  1, 17  ,  0, 0  ]
+        }
+    ]
+}

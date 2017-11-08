@@ -418,6 +418,7 @@ function update(delta) {
     p.rotation = player.rotation;
     p.egg_color = player.egg_color;
     p.belt_color = player.belt_color;
+    p.is_alive  = player.is_alive;
     serverUpdate.player_update.push(p);
   });
   //console.log('sending update');
@@ -475,6 +476,14 @@ function collisionsUpdate() {
         console.log('player can level up again');
         player.canLevelUp = true;
         }
+    }
+
+    // check if we need to kill the player off
+    if (player.is_alive) {
+      if (player.x > 3900 && player.x < 4130 && player.y > 4735) {
+        console.log('egg death');
+        player.is_alive = false;
+      }
     }
   })
 }
