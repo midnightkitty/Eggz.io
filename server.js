@@ -24,9 +24,13 @@ var RTCIceCandidate         = webrtc.RTCIceCandidate;
 //
 // Express Web Server
 //
-app.get('/', function(req, res){
+app.get('/test-server', function(req, res){
     res.sendFile(__dirname + '/www/index.html');
 });   
+
+app.get('/', function(req,res) {
+  res.sendFile(__dirname + '/www/maintenance.html');
+});
 
 app.get('/particle-example.html', function(req, res){
   res.sendFile(__dirname + '/www/particle-example.html');
