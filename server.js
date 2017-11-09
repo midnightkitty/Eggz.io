@@ -13,7 +13,7 @@ var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
 var players = [];
-const server_fps = 30; // server update frequency in updates / seconds
+const server_fps = 20; // server update frequency in updates / seconds
 var delta; // time in ms between now and the last physics update
 
 // webrtc aliases
@@ -341,7 +341,7 @@ setInterval(function() {
         name: player.name
       });  
     }, this);
-    console.log('conected client websockets: ' + JSON.stringify(player_list));
+    //console.log('conected client websockets: ' + JSON.stringify(player_list));
     //io.emit('player_list', JSON.stringify(player_list));
     //io.emit('data','l-' + JSON.stringify(player_list));
 

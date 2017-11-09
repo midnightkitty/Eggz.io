@@ -214,7 +214,19 @@
                 right: 10px;
                 position:absolute; 
                 bottom:40px;
-            }          
+            }       
+            #server-hrz { 
+                background-color: rgba(255,255,255,0.25); 
+                font-family: Verdana, Geneva, sans-serif; 
+                -moz-user-select: none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                margin: 0; 
+                padding: 0; 
+                right: 10px;
+                position:absolute; 
+                bottom:100px;
+            }        
             #keyboard {
                 position: fixed;
                 bottom: 20px;
@@ -256,6 +268,7 @@
             <div id="disconnect-title">Disconnected<br><br>Refresh browser to restart</div>
             <div id="refresh-button">Refresh</div>
         </span>
+        <span id ="server-hrz" style="display: none;">...</span>
         <span id="ws-ping" style="display: none;">...</span>  
         <span id="dc-ping" style="display: none;">...</span>        
         <span id="stats" style="display: none;">...</span>

@@ -17,8 +17,8 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 250;  // ms behind server that we update data from the server
-const buffer_size = 10; // seconds of server_updates to keep cached
+const net_offset = 100;  // ms behind server that we update data from the server
+const buffer_size = 3; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
 var client_smooth = 10;  //amount of smoothing to apply to client update dest  -1 disables smoothing. lower number adds more smoothing, useful if the server updates are lower FPS
@@ -159,6 +159,8 @@ function updateDCPing(delta) {
 function consumePlayerUpdate(serverUpdate) {
   //console.log('consuming player update from server');
   // cache the server update
+  serverUpdate.client_rec_time = parseInt(Date.now());
+
   server_updates.push(serverUpdate);
   
    // console.log('server_updates length:' + server_updates.length);
@@ -259,14 +261,12 @@ function updatePlayers() {
             if (player.belt_color != sPlayer.belt_color) {
               console.log('updating belt color');
 
-              /*
               player.belt = new Phaser.Sprite(game, 0,0,sPlayer.belt_color);
               player.belt.anchor.y = 0.15;
               player.belt.anchor.x = 0.5;
               game.world.add(player.belt);
               player.sprite.addChild(player.belt);
               player.belt_color = sPlayer.belt_color;
-              */
             }
 
             // update alive / dead status
@@ -630,6 +630,7 @@ function pageSetup() {
   });
 
   if ($.urlParam('debug')) {
+    $('#server-hrz').show();
     $('#ws-ping').show();
     $('#dc-ping').show();
     $('#stats').show();
@@ -1122,4 +1123,21 @@ setInterval(function() {
     client_sendWS('w', id + '.' + t);
   
   }, 1000);
+
+//
+// Net updates throughput
+//
+setInterval(function() {
+  var deltas = [];
+  
+  for (i = 0; i < server_updates.length-1; i++) {
+    deltas.push(server_updates[i+1].client_rec_time - server_updates[i].client_rec_time);
+  }
+
+  var delta_avg = deltas.reduce((previous, current) => current += previous) / deltas.length;
+
+
+  $('#server-hrz').html('Server Updates: ' + Math.round(1000 / delta_avg) + 'hrz');    
+
+}, 1000);
   
