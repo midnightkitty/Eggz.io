@@ -37,6 +37,7 @@ var keyInputStr;
 
 var tileLedge;
 var dash_meter;
+var kinSprite = {};
 
 $(document).ready(function() {
   setupPhaserGame();
@@ -350,6 +351,9 @@ function updatePlayers() {
               player.sprite.x = smooth_pos.x;
               player.sprite.y = smooth_pos.y;
 
+              //player.sprite.body.x = smooth_pos.x;
+              //player.sprite.body.y = smooth_pos.y;
+
 
               // use these to turn off smoothing
               // set server FPS to 5 or lower to see extreme lag results
@@ -361,6 +365,7 @@ function updatePlayers() {
               else {
                 if (smooth_rotation != undefined) {
                   //console.log('using smooth angle for smoothing');
+                  //player.sprite.body.rotation = smooth_rotation;
                   player.sprite.rotation = smooth_rotation;
                   player.rotation = smooth_rotation;
                 }
@@ -722,9 +727,28 @@ function keyboardSetup() {
 
     // particle emitter test
     if (e.keyCode == 112) {
-      emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
+      // emitter.emit('basic', x - 48, y - 40, { zone: image, full: true, spacing: 8, setColor: true, radiateFrom: { x: localPlayer.sprite.x, y: localPlayer.sprite.y, velocity: 1 } });
     }
 
+    if (e.keyCode == 110) {
+      
+      kinSprite = game.add.sprite(1100, 4400, 'egg');
+      kinSprite.anchor.setTo(0.5, 0.5);
+      game.physics.p2.enable(kinSprite, false);
+      kinSprite.body.clearShapes();
+      kinSprite.body.loadPolygon('eggPhysicsData', 'egg128');
+      kinSprite.body.kinematic = true;
+    }
+
+    // kinematic right
+    if (e.keyCode == 108) {
+      kinSprite.x = kinSprite.body.x = kinSprite.body.x + 10;
+    }
+
+    // kinematic left
+    if (e.keyCode == 106) {
+      kinSprite.x = kinSprite.body.velocity.x = -10;
+    }
     if (e.keyCode == 101) {
       //death(localPlayer);
     }
@@ -755,10 +779,12 @@ function keyboardSetup() {
     }
     else if (chatOpen) {
       if (e.keyCode == 13) {
-          e.preventDefault();
+        e.preventDefault();
 
-          // Send the message
-          var msg = $('#msg-input').html();
+        // Send the message
+        var msg = $('#msg-input').html();
+
+        if (msg.length > 0) {
           socket.emit('data', 'c-' + localPlayer.id + '.' + msg);
           $('#msg-input').html('');
 
@@ -766,6 +792,7 @@ function keyboardSetup() {
           setTimeout(function() {
             localPlayer.dialog_box.setText('');
           }, chat_msg_life);
+        }
       }
       if (e.keyCode == 96) {
           $('#msg-input').val('');
