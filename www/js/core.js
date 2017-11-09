@@ -230,7 +230,12 @@ function setupPhaserGame() {
         var egg_color = eggs_list[Math.floor(Math.random()*eggs_list.length)];
         // console.log('random egg color: ' + egg_color);
 
-        player = game.add.sprite(400, 1500, egg_color);
+        // spawn with drop
+        player = game.add.sprite(getRandomInt(80,500), getRandomInt(500,2000), egg_color);
+        
+        // spawn close to pillow
+        //player = game.add.sprite(400, 4200, egg_color);
+
         game.physics.p2.enable(player, false);
         player.body.clearShapes();
         player.body.loadPolygon('eggPhysicsData', 'egg128');
@@ -515,8 +520,14 @@ function setupPhaserGame() {
 }
 
 function addPlayerSprite(egg_color) {
-    var newPlayerSprite = game.add.sprite(getRandomInt(0,500), world_y-1500, egg_color);
+    var newPlayerSprite = game.add.sprite(getRandomInt(0,500), 0, egg_color);
     newPlayerSprite.anchor.setTo(0.5, 0.5);
+    game.physics.p2.enable(newPlayerSprite, false);
+    newPlayerSprite.body.clearShapes();
+    newPlayerSprite.body.loadPolygon('eggPhysicsData', 'egg128');
+    newPlayerSprite.body.static = true;
+
+    
     return newPlayerSprite;
 }
 

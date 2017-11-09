@@ -17,8 +17,8 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 150;  // ms behind server that we update data from the server
-const buffer_size = 300; // seconds of server_updates to keep cached
+const net_offset = 250;  // ms behind server that we update data from the server
+const buffer_size = 10; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
 var client_smooth = 10;  //amount of smoothing to apply to client update dest  -1 disables smoothing. lower number adds more smoothing, useful if the server updates are lower FPS
@@ -243,6 +243,8 @@ function updatePlayers() {
         var player_found = false;
         players.forEach(function(player) {
           if (sPlayer.id == player.id) {
+            player_found = true;
+
             // The server user may have a name assigned now, make sure we have it locally
             player.name = sPlayer.name;
 
@@ -257,12 +259,14 @@ function updatePlayers() {
             if (player.belt_color != sPlayer.belt_color) {
               console.log('updating belt color');
 
+              /*
               player.belt = new Phaser.Sprite(game, 0,0,sPlayer.belt_color);
               player.belt.anchor.y = 0.15;
               player.belt.anchor.x = 0.5;
               game.world.add(player.belt);
               player.sprite.addChild(player.belt);
               player.belt_color = sPlayer.belt_color;
+              */
             }
 
             // update alive / dead status
@@ -275,122 +279,122 @@ function updatePlayers() {
             if (!sPlayer.is_alive && player.is_alive && !(player === localPlayer)) {
               console.log('killing remote player');
               death(player);
-            }
-
-            player.is_alive = sPlayer.is_alive;
-
-
-
-
-
-            // save the serverPlayer we just found
-            // var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
-            // We found a player on the server that already exists on the server
-            // we need to update its position
-
-            var target_pos = {};
-            var past_pos = {};
-            var target_rotation;
-            var past_rotation;
-            
-            // find the target position of each enemy player
-            target.player_update.forEach(function(tPlayer) {
-              if (player.id == tPlayer.id) {
-                target_pos = { x: tPlayer.x, y: tPlayer.y };
-                target_rotation = tPlayer.rotation; 
-              }
-            });
-
-            previous.player_update.forEach(function(pPlayer) {
-              if (player.id == pPlayer.id) {
-                past_pos = { x:pPlayer.x, y:pPlayer.y };
-                past_rotation = pPlayer.rotation;
-              }
-            });
-
-            //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
-
-            //
-            // interpolation
-            //
-            var ghost_pos = v_lerp(past_pos, target_pos, time_point);
-
-            //console.log('time_point' + time_point);
-            //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
-
-            ghost_rotation = interpolateAngle(past_rotation, target_rotation, time_point);
-            //console.log('past_rotation:' + past_rotation + ', target_rotation:' + target_rotation + ', ghost_rotation:' + ghost_rotation);
-
-           // console.log('past_angle:' + past_angle + ', target_angle:' + target_angle + ', ghost_angle:' + ghost_angle);            
-
-            // update player position with interpolation and smoothing
-            if (client_smooth == -1) {
-              player.sprite.x = ghost_pos.x;
-              player.sprite.y = ghost_pos.y;
-              player.sprite.rotation = ghost_rotation;
-            }
-            // apply client smoothing. If the frame rate from the server is slow, this will interpolate extra frames
+            } 
             else {
-              var smooth_pos;
-              var smooth_rotation;
-        
-              var tween_speed = (client_dpt  / 1000) * client_smooth;
-              // console.log(tween_speed);
-              var tween_speed_bound = (Math.max(0, Math.min(1,tween_speed))).toFixed(3);
-              var current_pos = { x:player.sprite.world.x, y:player.sprite.world.y };
 
-              // smooth the player position
-              smooth_pos = v_lerp(current_pos, ghost_pos, tween_speed_bound);
+              player.is_alive = sPlayer.is_alive;
 
-              // smooth the player angle
-              smooth_rotation = interpolateAngle(player.sprite.rotation, ghost_rotation, tween_speed_bound);
-              // console.log('player.sprite.rotation: '  +player.sprite.rotation + ', ghost_rotation:' + ghost_rotation + ', smooth_rotation:' + smooth_rotation);
+              // save the serverPlayer we just found
+              // var sPlayerIndex = serverUpdate.player_update.indexOf(sPlayer);
+              // We found a player on the server that already exists on the server
+              // we need to update its position
 
+              var target_pos = {};
+              var past_pos = {};
+              var target_rotation;
+              var past_rotation;
+              
+              // find the target position of each enemy player
+              target.player_update.forEach(function(tPlayer) {
+                if (player.id == tPlayer.id) {
+                  target_pos = { x: tPlayer.x, y: tPlayer.y };
+                  target_rotation = tPlayer.rotation; 
+                }
+              });
 
-              // update player position and angle
-              player.sprite.x = smooth_pos.x;
-              player.sprite.y = smooth_pos.y;
+              previous.player_update.forEach(function(pPlayer) {
+                if (player.id == pPlayer.id) {
+                  past_pos = { x:pPlayer.x, y:pPlayer.y };
+                  past_rotation = pPlayer.rotation;
+                }
+              });
 
-              //player.sprite.body.x = smooth_pos.x;
-              //player.sprite.body.y = smooth_pos.y;
+              //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
 
+              //
+              // interpolation
+              //
+              var ghost_pos = v_lerp(past_pos, target_pos, time_point);
 
-              // use these to turn off smoothing
-              // set server FPS to 5 or lower to see extreme lag results
+              //console.log('time_point' + time_point);
+              //console.log('past_angle:' + past_angle + ', target_angle:' + target_angle);
+
+              ghost_rotation = interpolateAngle(past_rotation, target_rotation, time_point);
+              //console.log('past_rotation:' + past_rotation + ', target_rotation:' + target_rotation + ', ghost_rotation:' + ghost_rotation);
+
+            // console.log('past_angle:' + past_angle + ', target_angle:' + target_angle + ', ghost_angle:' + ghost_angle);            
+
+              // update player position with interpolation and smoothing
               if (client_smooth == -1) {
-              player.sprite.x = ghost_pos.x;
-              player.sprite.y = ghost_pos.y;
-              player.sprite.rotation = ghost_rotation;
+                player.sprite.x = ghost_pos.x;
+                player.sprite.y = ghost_pos.y;
+                player.sprite.rotation = ghost_rotation;
               }
+              // apply client smoothing. If the frame rate from the server is slow, this will interpolate extra frames
               else {
-                if (smooth_rotation != undefined) {
-                  //console.log('using smooth angle for smoothing');
-                  //player.sprite.body.rotation = smooth_rotation;
-                  player.sprite.rotation = smooth_rotation;
-                  player.rotation = smooth_rotation;
+                var smooth_pos;
+                var smooth_rotation;
+          
+                var tween_speed = (client_dpt  / 1000) * client_smooth;
+                // console.log(tween_speed);
+                var tween_speed_bound = (Math.max(0, Math.min(1,tween_speed))).toFixed(3);
+                var current_pos = { x:player.sprite.world.x, y:player.sprite.world.y };
+
+                // smooth the player position
+                smooth_pos = v_lerp(current_pos, ghost_pos, tween_speed_bound);
+
+                // smooth the player angle
+                smooth_rotation = interpolateAngle(player.sprite.rotation, ghost_rotation, tween_speed_bound);
+                // console.log('player.sprite.rotation: '  +player.sprite.rotation + ', ghost_rotation:' + ghost_rotation + ', smooth_rotation:' + smooth_rotation);
+
+
+                // update player position and angle
+                //player.sprite.x = smooth_pos.x;
+                //player.sprite.y = smooth_pos.y;
+
+                if (player.sprite.body != undefined) {
+                  player.sprite.body.x = smooth_pos.x;
+                  player.sprite.body.y = smooth_pos.y;
                 }
-                // the egg starts at 0/undefined, this will catch the first movement when
-                // the tween would fail
+
+
+                // use these to turn off smoothing
+                // set server FPS to 5 or lower to see extreme lag results
+                if (client_smooth == -1) {
+                player.sprite.x = ghost_pos.x;
+                player.sprite.y = ghost_pos.y;
+                player.sprite.rotation = ghost_rotation;
+                }
                 else {
-                // console.log('using ghost angle for smoothing');
-                  player.sprite.rotation = ghost_rotation;
-                  player.rotation = ghost_rotation;
+                  if (smooth_rotation != undefined) {
+                    //console.log('using smooth angle for smoothing');
+                      if (player.sprite.body != undefined) {
+                        player.sprite.body.rotation = smooth_rotation;
+                      }
+                    //player.sprite.rotation = smooth_rotation;
+                    //player.rotation = smooth_rotation;
+                  }
+                  // the egg starts at 0/undefined, this will catch the first movement when
+                  // the tween would fail
+                  else {
+                  // console.log('using ghost angle for smoothing');
+                    //player.sprite.rotation = ghost_rotation;
+                    //player.rotation = ghost_rotation;
+                  }
                 }
               }
+
+              // update the players name label location, we have to do this as a separate game
+              // object otherwise it would rotate with the players egg
+                      // update the position of the player's name label
+              player.name_label.setText(player.name);
+              player.name_label.x = player.sprite.x;
+              player.name_label.y  = player.sprite.y + player.sprite.height/2 + 10;
+
+              // updat the players dialog box location
+              player.dialog_box.x = player.sprite.x;
+              player.dialog_box.y  = player.sprite.y - player.sprite.height/2 - 10;            
             }
-
-            // update the players name label location, we have to do this as a separate game
-            // object otherwise it would rotate with the players egg
-                    // update the position of the player's name label
-            player.name_label.setText(player.name);
-            player.name_label.x = player.sprite.x;
-            player.name_label.y  = player.sprite.y + player.sprite.height/2 + 10;
-
-            // updat the players dialog box location
-            player.dialog_box.x = player.sprite.x;
-            player.dialog_box.y  = player.sprite.y - player.sprite.height/2 - 10;            
-            
-            player_found = true;
           }
           
         });
@@ -398,7 +402,7 @@ function updatePlayers() {
         // Add new players
         if (!player_found) {
           console.log('adding remote player: color=' + sPlayer.egg_color);
-          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation, sPlayer.egg_color);
+          addNewPlayer(sPlayer.id, sPlayer.x, sPlayer.y, sPlayer.rotation, 'egg');
         }
       }
       // Updates for the local player
