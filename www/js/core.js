@@ -263,7 +263,7 @@ function setupPhaserGame() {
         localPlayer.info_label = game.add.text(100, 4500, 'info', { font: "16px Arial", fill: "#000000", align: "center"});
         localPlayer.info_label.anchor.set(0.5);
         // Set whether the info label is visible or not
-        localPlayer.info_label.visible = config.info_label;
+        localPlayer.info_label.visible = $.urlParam('debug');
         
         localPlayer.dialog_box = game.add.text(100, 4500, '', { font: "16px Arial", fill: "#000000", align: "center", backgroundColor: "#FFFFFF"});
         localPlayer.dialog_box.alpha = 0.5;
@@ -398,7 +398,7 @@ function setupPhaserGame() {
 
                 //  Dash to the left
                 if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-                    player.body.force.x = (-150 * dash_speed);
+                    player.body.force.x = (-150 * config.dash_speed);
                 }
                 //  Move to the left
                 else if (Math.abs(player.body.velocity.x) < max_velocity) {
@@ -414,7 +414,7 @@ function setupPhaserGame() {
 
                 //  Dash to the right
                 if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
-                    player.body.force.x = (150 * dash_speed);
+                    player.body.force.x = (150 * config.dash_speed);
                 }
                 // Move to the right
                 else if (Math.abs(player.body.velocity.x) < max_velocity) {

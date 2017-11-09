@@ -1,4 +1,3 @@
-
 class Config {
     
     constructor() {
@@ -11,13 +10,11 @@ class Config {
         this.player_jump_force = 400;
         this.player_max_x_velocity = 500;
         this.gravity = 350;
-        this.restitution = 0.3; // bounciness
+        this.restitution = 0.1; // bounciness
+        this.dash_speed = 20;
 
         this.wrtc = false; // WebRTC mode        
-        this.debug = true; // display frame-rate, ping etc.
-        this.info_label = false; // extra player info like coordinates
     }
-    
 }
     
 // Try will fail when included by the client browser

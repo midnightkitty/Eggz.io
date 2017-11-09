@@ -13,7 +13,7 @@ var Player = require('./www/js/core.js').Player;
 var msg = {}; // Messenger instance for server
 
 var players = [];
-const server_fps = 20; // server update frequency in updates / seconds
+const server_fps = 45; // server update frequency in updates / seconds
 var delta; // time in ms between now and the last physics update
 
 // webrtc aliases
@@ -356,7 +356,7 @@ setInterval(function() {
     }
 
   }
-}, 10000);
+}, 2000);
 
 /**
 Length of a tick in milliseconds. The denominator is your desired framerate.

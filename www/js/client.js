@@ -17,11 +17,11 @@ var cursors;
 var server_time;
 var client_time;
 var server_updates = [];  // log of server updates for interpolation
-const net_offset = 300;  // ms behind server that we update data from the server
+const net_offset = 150;  // ms behind server that we update data from the server
 const buffer_size = 300; // seconds of server_updates to keep cached
 const desired_server_fps = 60;  // desired server update rate, may vary and be much lower
 var target_time = 0.01; // the time where we want to be in the server timeline
-var client_smooth = 5;  //amount of smoothing to apply to client update dest  -1 disables smoothing. lower number adds more smoothing, useful if the server updates are lower FPS
+var client_smooth = 10;  //amount of smoothing to apply to client update dest  -1 disables smoothing. lower number adds more smoothing, useful if the server updates are lower FPS
 
 var pingsDC = [];
 var pingsWS = [];
@@ -31,8 +31,6 @@ var localPlayer = {};
 // total world dimensions
 const world_x = 5000; 
 const world_y = 5000;
-
-var dash_speed = 20;
 
 var keys = {};
 var keyInputStr;
@@ -608,6 +606,12 @@ function pageSetup() {
       $('#user-id').focus();
   }, 1000);
 
+  setTimeout(function() {
+    if(!gameFocus) {
+      $('#keyboard').fadeIn(3000);
+    }
+  }, 10000);
+
   $('#login-button').click(function() {
       login();
   });
@@ -616,12 +620,24 @@ function pageSetup() {
     location.reload();
   });
 
-  if (config.debug) {
+  if ($.urlParam('debug')) {
     $('#ws-ping').show();
     $('#dc-ping').show();
     $('#stats').show();
   }
 }
+
+$.urlParam = function(name){
+
+	var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+  if (results != undefined) {
+    return results[1];
+  }
+  else {
+    return false;
+  }
+}
+
 
 function login() {
   if (localPlayer.name == '' && $('#user-id').text() != '') {
@@ -631,6 +647,8 @@ function login() {
       //localUser.ID = localUser.name + getRandomInt(1,100000);        
       socket.emit('data', 'n-' + localPlayer.id + '.' + localPlayer.name);
       $('#login').fadeOut(1000);
+      $('#keyboard').fadeOut(1000);
+      $('#keyboard').hide();
       gameFocus = true;
   }
 }

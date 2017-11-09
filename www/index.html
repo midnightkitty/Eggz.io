@@ -1,6 +1,15 @@
 <html>
     <head>
         <title>Eggz.io</title>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-109440893-1"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-109440893-1');
+        </script>
         <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="js/uuid.js"></script>
@@ -205,7 +214,14 @@
                 right: 10px;
                 position:absolute; 
                 bottom:40px;
-            }              
+            }          
+            #keyboard {
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translate(-50%);
+                opacity: 0.8;
+            }    
             body {
                 margin:0; 
                 width:100%; 
@@ -235,6 +251,7 @@
             <div id="user-id" contenteditable="true" spellcheck="false"></div>
             <div id="login-button">Join</div>
         </span>
+        <img id="keyboard" src="assets/keyboard.png" style="display: none;">
         <span id="disconnect-notice" style="display:none;">
             <div id="disconnect-title">Disconnected<br><br>Refresh browser to restart</div>
             <div id="refresh-button">Refresh</div>
