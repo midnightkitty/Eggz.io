@@ -11,5 +11,11 @@ files:
     destination: /jet/app/eggz.io/      
   - source: /server.js
     destination: /jet/app/eggz.io/
+  - source: /headless-phaser.js
+    destination: /jet/app/eggz.io/
+  - source: /phaser-server.js
+    destination: /jet/app/eggz.io/
+  - source: /pixi.js
+    destination: /jet/app/eggz.io/ 
   - source: ./www
     destination: /jet/app/eggz.io/www/
