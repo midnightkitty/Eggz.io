@@ -12,6 +12,7 @@ class Config {
         this.gravity = 350;
         this.restitution = 0.1; // bounciness
         this.dash_speed = 20;
+        this.inactive_disconnect = 3000; // ms
 
         this.wrtc = false; // WebRTC mode        
     }

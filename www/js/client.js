@@ -39,6 +39,8 @@ var tileLedge;
 var dash_meter;
 var kinSprite = {};
 
+var last_activity = Date.now();
+
 $(document).ready(function() {
   setupPhaserGame();
   keyboardSetup();
@@ -1141,3 +1143,23 @@ setInterval(function() {
 
 }, 1000);
   
+
+//
+//  Monito player activity and disconnect if not active in X Seconds
+//
+function disconnectActivityCheck() {
+  var now = Date.now();
+  if (now - last_activity > config.inactive_disconnect) {
+    console.log('disconnecting for inactivity');
+    this.socket.disconnect();
+
+  }
+}
+
+
+
+$(document).keydown(function(event) {
+  console.log('key press event');
+  last_activity = Date.now();
+});
+

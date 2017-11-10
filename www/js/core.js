@@ -516,6 +516,7 @@ function setupPhaserGame() {
 
         dash_meter.draw();
 
+        disconnectActivityCheck();
     }
 }
 

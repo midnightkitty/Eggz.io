@@ -9,8 +9,14 @@
   "author": "= <=>",
   "license": "ISC",
   "dependencies": {
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
     "express": "^4.16.2",
+    "ismobilejs": "^0.4.1",
+    "jsdom": "^11.3.0",
+    "local-xmlhttprequest": "^1.5.1",
+    "p2": "^0.7.1",
     "phaser": "^2.6.2",
+    "pixi.js": "^2.2.9",
     "prompt": "^1.0.0",
     "socket.io": "^2.0.3",
     "wrtc": "0.0.62"
