@@ -871,6 +871,7 @@ function setupSocketIO() {
     $('#login').hide(); // hide the login if it's showing
     $('#disconnect-notice').show();
     gameFocus = false;
+    console.log('websocket disconnected');
   });
 
   socket.on('msg', function(data) {
@@ -1139,8 +1140,7 @@ setInterval(function() {
   var delta_avg = deltas.reduce((previous, current) => current += previous) / deltas.length;
 
 
-  $('#server-hrz').html('Server Updates: ' + Math.round(1000 / delta_avg) + 'hrz');    
-
+  $('#server-hrz').html('Server Updates: ' + Math.round(1000 / delta_avg) + 'hrz');
 }, 1000);
   
 
@@ -1150,16 +1150,18 @@ setInterval(function() {
 function disconnectActivityCheck() {
   var now = Date.now();
   if (now - last_activity > config.inactive_disconnect) {
-    console.log('disconnecting for inactivity');
-    this.socket.disconnect();
-
+    if (!$.urlParam('debug')) {
+      $('#disconnect-title').html('Disconnected for inactivity<br><br>Refresh browser to restart');
+      //console.log('disconnecting for inactivity');
+      this.socket.disconnect();
+    }
   }
 }
 
 
 
 $(document).keydown(function(event) {
-  console.log('key press event');
+  //console.log('key press event');
   last_activity = Date.now();
 });
 

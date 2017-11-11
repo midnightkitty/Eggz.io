@@ -1,4 +1,14 @@
 var Phaser = require('./headless-phaser.js');
+var os = require('os');
+
+var asset_path = '';
+
+// If we are on aws running in headless mode, we need the full path to preloaded files
+if (os.platform() == 'linux')
+    asset_path = __dirname + '/www/assets/';
+else
+    asset_path = __dirname + '\\www\\assets\\';
+
 
 // Sample code
 
@@ -11,6 +21,9 @@ function preload() {
   //game.load.image('car',__dirname + '\\bullet.png');
   // game.load.image('tinycar',__dirname + '\\bullet.png');
  // game.load.physics('player', __dirname + '\\player.json');
+
+ //game.load.image('sky',dir_path_linux + 'assets/blue-sky.jpg');
+ game.load.image('sky', asset_path + 'blue-sky.jpg');
 }
 
 function create() {
@@ -31,7 +44,7 @@ function create() {
 };
 
 function update() {
-    console.log("update");
+    //console.log("update");
     
     /*
     bullets.forEachAlive(moveBullets,this);  //make bullets accelerate to ship
