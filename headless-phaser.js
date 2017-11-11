@@ -204,7 +204,7 @@ global.PIXI.CanvasPool= {
  */
 global.PIXI.CanvasPool.pool = [];
 
-var Phaser = require('./www/js/phaser.js');
+var Phaser = require('phaser');
 global.Phaser = Phaser;
 
 module.exports = Phaser;
