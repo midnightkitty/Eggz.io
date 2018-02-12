@@ -5,7 +5,7 @@
 * [Built With](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with)
 
 ### Gameplay
-* Play at [http://www.eggz.io](http://www.eggz.io)
+* Play at [Eggz.io](http://www.eggz.io)
 * Built for Chrome
 * Multiplayer
 * Arrow keys to move and jump
