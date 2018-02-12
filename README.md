@@ -5,7 +5,7 @@
 * [Built With](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with)
 
 ### Gameplay
-* Play at <a href="http://www.eggz.io/" target="_blank">Eggz.io</a>
+* Play at <a href="https://stackoverflow.com/questions/3492153/markdown-open-a-new-window-link" target="_blank">Eggz.io</a>
 * Built for Chrome
 * Multiplayer
 * Arrow keys to move and jump
