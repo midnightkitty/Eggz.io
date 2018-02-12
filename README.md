@@ -19,4 +19,9 @@ In a terminal in the desired location, clone the repository and install the pack
 ```
 git clone https://github.com/midnightkitty/eggz.io
 ```
-
+```
+cd Eggz.io
+```
+```
+npm install
+```
