@@ -1,5 +1,6 @@
 # Eggz.io
 
+### Table of Contents
 * [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#getting-started)
 * [Built With](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with)
 
