@@ -25,3 +25,9 @@ cd Eggz.io
 ```
 npm install
 ```
+
+## Built With
+
+* [Phaser](https://phaser.io/) - HTML5 Game Engine
+* [Node.js](https://nodejs.org/en/) - Server Framework
+* [NPM](https://www.npmjs.com/) - Package Manager
