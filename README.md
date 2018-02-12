@@ -1,7 +1,7 @@
 # Eggz.io
 
-* [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#getting-started) - Getting Started
-* [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with) - Built With
+* [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#getting-started)
+* [Built With](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with)
 
 Play at http://www.eggz.io
 
