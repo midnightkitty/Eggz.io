@@ -1,5 +1,8 @@
 # Eggz.io
 
+* [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#getting-started) - Getting Started
+* [Getting Started](https://github.com/midnightkitty/Eggz.io/blob/master/README.md#built-with) - Built With
+
 Play at http://www.eggz.io
 
 ### Gameplay
