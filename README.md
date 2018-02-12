@@ -13,3 +13,10 @@ Play at http://www.eggz.io
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 
+### Prerequisites
+
+In a terminal in the desired location, clone the repository and install the packages using NPM.
+```
+git clone https://github.com/midnightkitty/eggz.io
+```
+
