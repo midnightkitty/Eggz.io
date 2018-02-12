@@ -26,6 +26,13 @@ cd Eggz.io
 npm install
 ```
 
+### Running Eggz.io
+
+In the root folder, start the server.
+```
+node server.js
+```
+
 ## Built With
 
 * [Phaser](https://phaser.io/) - HTML5 Game Engine
