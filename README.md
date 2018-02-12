@@ -1,6 +1,6 @@
 # Eggz.io
 
-### Play at http://www.eggz.io
+Play at http://www.eggz.io
 
 ### Gameplay
 * Built for Chrome
